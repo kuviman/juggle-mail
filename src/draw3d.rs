@@ -41,19 +41,14 @@ impl Draw3d {
             ),
         }
     }
-    pub fn draw_sprite(
+    pub fn draw_sprite_with_transform(
         &self,
         framebuffer: &mut ugli::Framebuffer,
         camera: &Camera,
         texture: &ugli::Texture,
-        pos: vec3<f32>,
-        size: vec2<f32>,
+        transform: mat4<f32>,
         color: Rgba<f32>,
     ) {
-        let transform = mat4::translate(pos)
-            * mat4::rotate_x(-camera.latitude - camera.rot)
-            * mat4::scale(size.extend(1.0))
-            * mat4::translate(vec3(-0.5, 0.0, 0.0));
         ugli::draw(
             framebuffer,
             &self.assets.shaders.sprite,
@@ -71,6 +66,26 @@ impl Draw3d {
                 depth_func: Some(ugli::DepthFunc::Less),
                 ..default()
             },
+        );
+    }
+    pub fn draw_sprite(
+        &self,
+        framebuffer: &mut ugli::Framebuffer,
+        camera: &Camera,
+        texture: &ugli::Texture,
+        pos: vec3<f32>,
+        size: vec2<f32>,
+        color: Rgba<f32>,
+    ) {
+        self.draw_sprite_with_transform(
+            framebuffer,
+            camera,
+            texture,
+            mat4::translate(pos)
+                * mat4::rotate_x(-camera.latitude - camera.rot)
+                * mat4::scale(size.extend(1.0))
+                * mat4::translate(vec3(-0.5, 0.0, 0.0)),
+            color,
         );
     }
     pub fn draw(

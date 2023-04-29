@@ -26,6 +26,10 @@ pub struct Config {
     pub road_width: f32,
     pub mailbox_size: f32,
     pub distance_between_mailboxes: f32,
+    pub throw_time: f32,
+    pub item_throw_max_w: f32,
+    pub item_throw_scale: f32,
+    pub throw_height: f32,
 }
 
 #[derive(geng::asset::Load)]
@@ -95,6 +99,15 @@ impl Item {
     }
 }
 
+#[derive(Deref)]
+struct ThrownItem {
+    #[deref]
+    pub item: Item,
+    pub from: vec3<f32>,
+    pub to: vec3<f32>,
+    pub t: f32,
+}
+
 struct Mailbox {
     pub x: f32,
     pub latitude: f32,
@@ -106,7 +119,8 @@ struct Game {
     assets: Rc<Assets>,
     config: Rc<Config>,
     camera: Camera,
-    items: Vec<Item>,
+    juggling_items: Vec<Item>,
+    thrown_items: Vec<ThrownItem>,
     bag_position: Aabb2<f32>,
     holding: Option<Item>,
     mailboxes: Vec<Mailbox>,
@@ -158,7 +172,7 @@ impl Game {
             config: config.clone(),
             bag_position: Aabb2::point(vec2(0.0, -camera.fov() / 2.0 + 1.0)).extend_uniform(1.0),
             camera,
-            items: vec![],
+            juggling_items: vec![],
             holding: None,
             mailboxes: vec![],
             draw3d: Draw3d::new(geng, assets),
@@ -178,6 +192,7 @@ impl Game {
                     })
                     .collect()
             }),
+            thrown_items: vec![],
         }
     }
 }
@@ -193,7 +208,7 @@ impl geng::State for Game {
                     .camera
                     .as_2d()
                     .screen_to_world(self.framebuffer_size, position.map(|x| x as f32));
-                if let Some(index) = self.items.iter().rposition(|item| {
+                if let Some(index) = self.juggling_items.iter().rposition(|item| {
                     Aabb2::ZERO.extend_uniform(1.0).contains(
                         (Quad::unit()
                             .scale(item.half_size.map(|x| x + self.config.hand_radius))
@@ -205,7 +220,7 @@ impl geng::State for Game {
                         .into_2d(),
                     )
                 }) {
-                    self.holding = Some(self.items.remove(index));
+                    self.holding = Some(self.juggling_items.remove(index));
                 } else if self
                     .bag_position
                     .extend_uniform(self.config.hand_radius)
@@ -223,16 +238,33 @@ impl geng::State for Game {
                     .as_2d()
                     .screen_to_world(self.framebuffer_size, position.map(|x| x as f32));
                 if let Some(mut item) = self.holding.take() {
-                    item.pos = pos;
-                    item.vel = (vec2(0.0, self.config.throw_target_height) - item.pos)
-                        .normalize_or_zero()
-                        .rotate(thread_rng().gen_range(
-                            -self.config.throw_angle.to_radians()
-                                ..self.config.throw_angle.to_radians(),
-                        ))
-                        * self.config.throw_speed;
-                    item.w = thread_rng().gen_range(-1.0..1.0) * self.config.item_max_w;
-                    self.items.push(item);
+                    if let Some(index) = self.hovered_mailbox() {
+                        let mailbox = &self.mailboxes[index];
+                        item.w = thread_rng().gen_range(-1.0..1.0) * self.config.item_throw_max_w;
+                        // Shoutout to Foggy's mom
+                        let pixel_ray = self
+                            .camera
+                            .pixel_ray(self.framebuffer_size, position.map(|x| x as f32));
+                        let item = ThrownItem {
+                            item,
+                            from: pixel_ray.from + pixel_ray.dir.normalize_or_zero(),
+                            to: self.mailbox_pos(mailbox).normalize_or_zero()
+                                * (self.config.earth_radius + self.config.mailbox_size),
+                            t: 0.0,
+                        };
+                        self.thrown_items.push(item);
+                    } else {
+                        item.pos = pos;
+                        item.vel = (vec2(0.0, self.config.throw_target_height) - item.pos)
+                            .normalize_or_zero()
+                            .rotate(thread_rng().gen_range(
+                                -self.config.throw_angle.to_radians()
+                                    ..self.config.throw_angle.to_radians(),
+                            ))
+                            * self.config.throw_speed;
+                        item.w = thread_rng().gen_range(-1.0..1.0) * self.config.item_max_w;
+                        self.juggling_items.push(item);
+                    }
                 }
             }
             _ => {}
@@ -241,7 +273,7 @@ impl geng::State for Game {
     fn update(&mut self, delta_time: f64) {
         let delta_time = delta_time as f32;
 
-        for item in &mut self.items {
+        for item in &mut self.juggling_items {
             item.vel.y -= self.config.gravity * delta_time;
             item.pos += item.vel * delta_time;
             item.rot += item.w * delta_time;
@@ -265,6 +297,13 @@ impl geng::State for Game {
                 });
             }
         }
+
+        for item in &mut self.thrown_items {
+            item.t += delta_time;
+            item.item.rot += item.item.w * delta_time;
+        }
+        self.thrown_items
+            .retain(|item| item.t < self.config.throw_time);
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         self.framebuffer_size = framebuffer.size().map(|x| x as f32);
@@ -283,6 +322,26 @@ impl geng::State for Game {
             self.framebuffer_size,
             self.geng.window().cursor_position().map(|x| x as f32),
         );
+
+        for item in &self.thrown_items {
+            let t = item.t / self.config.throw_time;
+            let up = -vec3::cross(item.to - item.from, vec3(1.0, 0.0, 0.0)).normalize_or_zero();
+            let pos = item.from
+                + (item.to - item.from) * t
+                + up * (1.0 - (1.0 - t * 2.0).sqr()) * self.config.throw_height;
+            self.draw3d.draw_sprite_with_transform(
+                framebuffer,
+                &self.camera,
+                &item.texture,
+                mat4::translate(pos)
+                    * mat4::rotate_x(-self.camera.latitude - self.camera.rot)
+                    * mat4::rotate_z(item.rot)
+                    * mat4::scale(item.half_size.extend(1.0) * self.config.item_throw_scale)
+                    * mat4::translate(vec3(-1.0, -1.0, 0.0))
+                    * mat4::scale_uniform(2.0),
+                Rgba::WHITE,
+            );
+        }
 
         for (index, mailbox) in self.mailboxes.iter().enumerate() {
             self.draw3d.draw_sprite(
@@ -314,7 +373,7 @@ impl geng::State for Game {
                     .translate(mouse_pos),
             );
         }
-        for item in &self.items {
+        for item in &self.juggling_items {
             self.geng.draw2d().draw2d(
                 framebuffer,
                 self.camera.as_2d(),

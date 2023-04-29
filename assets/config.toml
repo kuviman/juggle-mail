@@ -16,3 +16,7 @@ camera_rot = 50
 road_width = 1
 mailbox_size = 0.5
 distance_between_mailboxes = 10
+throw_time = 0.5
+item_throw_max_w = 20
+item_throw_scale = 0.3
+throw_height = 0.5
