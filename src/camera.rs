@@ -30,6 +30,11 @@ impl Camera {
     pub fn fov(&self) -> f32 {
         self.cam2d.fov
     }
+
+    pub fn dir(&self) -> vec3<f32> {
+        let v = vec2(0.0, 0.1).rotate(-self.latitude - self.rot);
+        vec3(0.0, v.x, v.y)
+    }
 }
 
 impl geng::AbstractCamera3d for Camera {

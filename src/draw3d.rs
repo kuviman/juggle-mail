@@ -48,6 +48,7 @@ impl Draw3d {
         texture: &ugli::Texture,
         pos: vec3<f32>,
         size: vec2<f32>,
+        color: Rgba<f32>,
     ) {
         let transform = mat4::translate(pos)
             * mat4::rotate_x(-camera.latitude - camera.rot)
@@ -62,6 +63,7 @@ impl Draw3d {
                 ugli::uniforms! {
                     u_texture: texture,
                     u_model_matrix: transform,
+                    u_color: color,
                 },
                 camera.uniforms(framebuffer.size().map(|x| x as f32)),
             ),

@@ -116,6 +116,34 @@ struct Game {
 }
 
 impl Game {
+    pub fn mailbox_pos(&self, mailbox: &Mailbox) -> vec3<f32> {
+        let circle_pos = vec2(self.config.earth_radius, 0.0).rotate(mailbox.latitude);
+        vec3(mailbox.x, circle_pos.x, -circle_pos.y)
+    }
+    pub fn hovered_mailbox(&self) -> Option<usize> {
+        // self.hovered_mailbox();
+        let ray = self.camera.pixel_ray(
+            self.framebuffer_size,
+            self.geng.window().cursor_position().map(|x| x as f32),
+        );
+        let camera_dir = self.camera.dir();
+        let right = vec3(1.0, 0.0, 0.0);
+        let up = vec3::cross(camera_dir, right).normalize_or_zero();
+        self.mailboxes.iter().position(|mailbox| {
+            let pos = self.mailbox_pos(mailbox);
+            // dot(ray.from + ray.dir * t - pos, camera_dir) = 0
+            let t = vec3::dot(pos - ray.from, camera_dir) / vec3::dot(ray.dir, camera_dir);
+            if t < 0.0 {
+                return false;
+            }
+            let p = ray.from + ray.dir * t;
+
+            let p = vec2(vec3::dot(p - pos, right), vec3::dot(p - pos, up));
+            p.x.abs() < self.config.mailbox_size / 2.0
+                && p.y > 0.0
+                && p.y < self.config.mailbox_size
+        })
+    }
     pub fn new(geng: &Geng, assets: &Rc<Assets>, config: &Rc<Config>) -> Self {
         let camera = Camera::new(
             config.fov.to_radians(),
@@ -241,6 +269,7 @@ impl geng::State for Game {
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         self.framebuffer_size = framebuffer.size().map(|x| x as f32);
         self.camera.latitude = self.my_latitude;
+        let hovered_mailbox = self.hovered_mailbox();
         ugli::clear(framebuffer, Some(self.config.sky_color), Some(1.0), None);
         self.draw3d.draw(
             framebuffer,
@@ -255,14 +284,18 @@ impl geng::State for Game {
             self.geng.window().cursor_position().map(|x| x as f32),
         );
 
-        for mailbox in &self.mailboxes {
-            let circle_pos = vec2(self.config.earth_radius, 0.0).rotate(mailbox.latitude);
+        for (index, mailbox) in self.mailboxes.iter().enumerate() {
             self.draw3d.draw_sprite(
                 framebuffer,
                 &self.camera,
                 &self.assets.mailbox,
-                vec3(mailbox.x, circle_pos.x, -circle_pos.y),
+                self.mailbox_pos(mailbox),
                 vec2::splat(self.config.mailbox_size),
+                if Some(index) == hovered_mailbox {
+                    Rgba::RED
+                } else {
+                    Rgba::WHITE
+                },
             );
         }
 
