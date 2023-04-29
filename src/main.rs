@@ -53,18 +53,19 @@ struct Game {
 
 impl Game {
     pub fn new(geng: &Geng, assets: &Rc<Assets>, config: &Rc<Config>) -> Self {
+        let camera = geng::Camera2d {
+            center: vec2::ZERO,
+            rotation: 0.0,
+            fov: 10.0,
+        };
         Self {
             framebuffer_size: vec2::splat(1.0),
             geng: geng.clone(),
             assets: assets.clone(),
             config: config.clone(),
-            camera: geng::Camera2d {
-                center: vec2::ZERO,
-                rotation: 0.0,
-                fov: 10.0,
-            },
+            bag_position: Aabb2::point(vec2(0.0, -camera.fov / 2.0 + 1.0)).extend_uniform(1.0),
+            camera,
             items: vec![],
-            bag_position: Aabb2::point(vec2(-1.0, -1.0)).extend_uniform(1.0),
             holding: None,
         }
     }
