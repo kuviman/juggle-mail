@@ -242,9 +242,12 @@ impl geng::State for Game {
                         let mailbox = &self.mailboxes[index];
                         item.w = thread_rng().gen_range(-1.0..1.0) * self.config.item_throw_max_w;
                         // Shoutout to Foggy's mom
-                        let pixel_ray = self
+                        let mut pixel_ray = self
                             .camera
                             .pixel_ray(self.framebuffer_size, position.map(|x| x as f32));
+                        let cam_dir = self.camera.dir();
+                        pixel_ray.dir -= cam_dir * vec3::dot(cam_dir, pixel_ray.dir);
+                        pixel_ray.dir += cam_dir;
                         let item = ThrownItem {
                             item,
                             from: pixel_ray.from + pixel_ray.dir.normalize_or_zero(),

@@ -1,5 +1,5 @@
-gravity = 10
-throw_speed = 10
+gravity = 30
+throw_speed = 20
 throw_angle = 10
 item_scale = 0.5
 item_hold_scale = 0.7
@@ -13,7 +13,7 @@ sky_color = "#aaf"
 ride_speed = 0.1
 camera_height = 1
 camera_rot = 50
-road_width = 1
+road_width = 1.5
 mailbox_size = 0.5
 distance_between_mailboxes = 10
 throw_time = 0.5
