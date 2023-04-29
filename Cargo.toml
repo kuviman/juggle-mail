@@ -3,6 +3,11 @@ name = "ludum53"
 version = "0.1.0"
 edition = "2021"
 
+[features]
+default = []
+dynamic = ["dep:dynamic-deps"]
+
 [dependencies]
+dynamic-deps = { path = "dynamic-deps", optional = true }
 geng.git = "https://github.com/geng-engine/geng"
 serde = "1"

@@ -1,0 +1,11 @@
+[package]
+name = "dynamic-deps"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["dylib"]
+
+[dependencies]
+geng.git = "https://github.com/geng-engine/geng"
+serde = "1"
