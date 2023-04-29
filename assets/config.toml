@@ -1,5 +1,5 @@
 gravity = 10
 throw_speed = 10
 throw_angle = 20
-item_scale = 0.2
+item_scale = 0.3
 item_hold_scale = 0.7

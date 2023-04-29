@@ -80,15 +80,18 @@ impl geng::State for Game {
                 if self.bag_position.contains(pos) {
                     self.holding = Some(Item::new(&self.assets.envelope, self.config.item_scale));
                 } else if let Some(index) = self.items.iter().rposition(|item| {
-                    (Quad::unit()
-                        .scale(item.half_size)
-                        .rotate(item.rot)
-                        .translate(item.pos)
-                        .transform
-                        .inverse()
-                        * pos.extend(1.0))
-                    .into_2d()
+                    Aabb2::ZERO.extend_uniform(1.0).contains(
+                        (Quad::unit()
+                            .scale(item.half_size)
+                            .rotate(item.rot)
+                            .translate(item.pos)
+                            .transform
+                            .inverse()
+                            * pos.extend(1.0))
+                        .into_2d(),
+                    )
                 }) {
+                    self.holding = Some(self.items.remove(index));
                 }
             }
             geng::Event::MouseUp {
