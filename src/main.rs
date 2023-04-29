@@ -35,6 +35,10 @@ pub struct Config {
     pub colors: Vec<Rgba<f32>>,
     pub double_mailbox_probability: f64,
     pub time_scale: f32,
+    pub start_time: f32,
+    pub lives: usize,
+    pub juggling_score_multiplier: f32,
+    pub deliver_score: f32,
 }
 
 #[derive(geng::asset::Load)]
@@ -124,6 +128,8 @@ struct Mailbox {
 }
 
 struct Game {
+    score: f32,
+    time_left: f32,
     next_id: Id,
     framebuffer_size: vec2<f32>,
     geng: Geng,
@@ -139,6 +145,7 @@ struct Game {
     my_latitude: f32,
     road_mesh: ugli::VertexBuffer<draw3d::Vertex>,
     transition: Option<geng::state::Transition>,
+    lives: usize,
 }
 
 impl Game {
@@ -178,6 +185,9 @@ impl Game {
             config.earth_radius + config.camera_height,
         );
         Self {
+            lives: config.lives,
+            score: 0.0,
+            time_left: config.start_time,
             transition: None,
             next_id: 0,
             framebuffer_size: vec2::splat(1.0),
@@ -300,13 +310,34 @@ impl geng::State for Game {
         }
     }
     fn update(&mut self, delta_time: f64) {
-        let delta_time = delta_time as f32 * self.config.time_scale;
+        let delta_time = delta_time as f32;
+
+        if self.time_left < 0.0 || self.lives == 0 {
+            // TODO
+            return;
+        }
+
+        self.score +=
+            delta_time * self.juggling_items.len() as f32 * self.config.juggling_score_multiplier;
+        self.time_left -= delta_time;
+
+        let delta_time = delta_time * self.config.time_scale;
 
         for item in &mut self.juggling_items {
             item.vel.y -= self.config.gravity * delta_time;
             item.pos += item.vel * delta_time;
             item.rot += item.w * delta_time;
         }
+        self.juggling_items.retain(|item| {
+            if item.pos.y > self.bag_position.min.y {
+                true
+            } else {
+                if self.lives != 0 {
+                    self.lives -= 1;
+                }
+                false
+            }
+        });
 
         self.my_latitude += self.config.ride_speed * delta_time;
 
@@ -355,8 +386,11 @@ impl geng::State for Game {
                 if let Some(index) = index {
                     let mailbox = &self.mailboxes[index];
                     if mailbox.color == item.color {
+                        self.score += self.config.deliver_score;
                         self.mailboxes.remove(index);
                     }
+                } else if self.lives != 0 {
+                    self.lives -= 1;
                 }
                 false
             }
@@ -450,6 +484,28 @@ impl geng::State for Game {
             })
             .scale_uniform(self.config.hand_radius)
             .translate(mouse_pos),
+        );
+
+        self.geng.default_font().draw(
+            framebuffer,
+            self.camera.as_2d(),
+            &format!(
+                "score: {}\ntime left: {:.3} secs",
+                self.score.floor() as i32,
+                self.time_left
+            ),
+            vec2::splat(geng::TextAlign::CENTER),
+            mat3::translate(vec2(0.0, 4.0)) * mat3::scale_uniform(0.5),
+            Rgba::BLACK,
+        );
+
+        self.geng.default_font().draw(
+            framebuffer,
+            self.camera.as_2d(),
+            &format!("lives {}", self.lives),
+            vec2::splat(geng::TextAlign::CENTER),
+            mat3::translate(vec2(0.0, 4.5)) * mat3::scale_uniform(0.5),
+            Rgba::BLACK,
         );
     }
     fn transition(&mut self) -> Option<geng::state::Transition> {
