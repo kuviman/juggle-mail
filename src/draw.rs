@@ -13,10 +13,10 @@ impl Game {
             &self.assets.road,
         );
 
-        let mouse_pos = self.camera.as_2d().screen_to_world(
-            self.framebuffer_size,
-            self.geng.window().cursor_position().map(|x| x as f32),
-        );
+        let cursor_world = self
+            .camera
+            .as_2d()
+            .screen_to_world(self.framebuffer_size, self.cursor);
 
         for item in &self.thrown_items {
             let t = item.t / self.config.throw_time;
@@ -64,7 +64,7 @@ impl Game {
                 &draw2d::TexturedQuad::unit_colored(&*item.texture, self.config.colors[item.color])
                     .scale(item.half_size * self.config.item_hold_scale)
                     .rotate(item.rot)
-                    .translate(mouse_pos),
+                    .translate(cursor_world),
             );
         }
         for item in &self.juggling_items {
@@ -87,7 +87,7 @@ impl Game {
                 &self.assets.hand
             })
             .scale_uniform(self.config.hand_radius)
-            .translate(mouse_pos),
+            .translate(cursor_world),
         );
 
         self.geng.default_font().draw(

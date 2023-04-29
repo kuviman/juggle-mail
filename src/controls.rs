@@ -1,11 +1,11 @@
 use super::*;
 
 impl Game {
-    pub fn start_drag(&mut self, cursor: vec2<f32>) {
+    pub fn start_drag(&mut self) {
         let cursor_world = self
             .camera
             .as_2d()
-            .screen_to_world(self.framebuffer_size, cursor);
+            .screen_to_world(self.framebuffer_size, self.cursor);
         if let Some(index) = self.juggling_items.iter().rposition(|item| {
             Aabb2::ZERO.extend_uniform(1.0).contains(
                 (Quad::unit()
@@ -32,17 +32,17 @@ impl Game {
         }
     }
 
-    pub fn end_drag(&mut self, cursor: vec2<f32>) {
+    pub fn end_drag(&mut self) {
         let cursor_world = self
             .camera
             .as_2d()
-            .screen_to_world(self.framebuffer_size, cursor);
+            .screen_to_world(self.framebuffer_size, self.cursor);
         if let Some(mut item) = self.holding.take() {
             if let Some(index) = self.hovered_mailbox() {
                 let mailbox = &self.mailboxes[index];
                 item.w = thread_rng().gen_range(-1.0..1.0) * self.config.item_throw_max_w;
                 // Shoutout to Foggy's mom
-                let mut pixel_ray = self.camera.pixel_ray(self.framebuffer_size, cursor);
+                let mut pixel_ray = self.camera.pixel_ray(self.framebuffer_size, self.cursor);
                 let cam_dir = self.camera.dir();
                 pixel_ray.dir -= cam_dir * vec3::dot(cam_dir, pixel_ray.dir);
                 pixel_ray.dir += cam_dir;

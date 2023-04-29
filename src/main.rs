@@ -75,6 +75,7 @@ struct Game {
     road_mesh: ugli::VertexBuffer<draw3d::Vertex>,
     transition: Option<geng::state::Transition>,
     lives: usize,
+    cursor: vec2<f32>,
 }
 
 impl Game {
@@ -84,10 +85,7 @@ impl Game {
     }
     pub fn hovered_mailbox(&self) -> Option<usize> {
         // self.hovered_mailbox();
-        let ray = self.camera.pixel_ray(
-            self.framebuffer_size,
-            self.geng.window().cursor_position().map(|x| x as f32),
-        );
+        let ray = self.camera.pixel_ray(self.framebuffer_size, self.cursor);
         let camera_dir = self.camera.dir();
         let right = vec3(1.0, 0.0, 0.0);
         let up = vec3::cross(camera_dir, right).normalize_or_zero();
@@ -146,6 +144,7 @@ impl Game {
                     .collect()
             }),
             thrown_items: vec![],
+            cursor: vec2::ZERO,
         }
     }
 
@@ -165,16 +164,36 @@ impl geng::State for Game {
                 position,
                 button: geng::MouseButton::Left,
             } => {
-                self.start_drag(position.map(|x| x as f32));
+                self.cursor = position.map(|x| x as f32);
+                self.start_drag();
+            }
+            geng::Event::MouseMove { position, .. } => {
+                self.cursor = position.map(|x| x as f32);
             }
             geng::Event::MouseUp {
                 position,
                 button: geng::MouseButton::Left,
             } => {
-                self.end_drag(position.map(|x| x as f32));
+                self.cursor = position.map(|x| x as f32);
+                self.end_drag();
             }
             geng::Event::KeyDown { key: geng::Key::R } => {
                 self.restart();
+            }
+            geng::Event::TouchStart { touches } => {
+                self.end_drag();
+                if let Some(touch) = touches.last() {
+                    self.cursor = touch.position.map(|x| x as f32);
+                    self.start_drag();
+                }
+            }
+            geng::Event::TouchMove { touches } => {
+                if let Some(touch) = touches.last() {
+                    self.cursor = touch.position.map(|x| x as f32);
+                }
+            }
+            geng::Event::TouchEnd { .. } => {
+                self.end_drag();
             }
             _ => {}
         }
