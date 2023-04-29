@@ -192,7 +192,7 @@ impl geng::State for Game {
 }
 
 fn main() {
-    let geng = Geng::new("Ludum53");
+    let geng = Geng::new("Juggle Mail - by kuviman for LD53");
     geng.clone().run_loading(async move {
         let assets: Rc<Assets> = geng
             .asset_manager()
