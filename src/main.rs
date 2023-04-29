@@ -6,6 +6,8 @@ mod draw3d;
 use camera::*;
 use draw3d::Draw3d;
 
+type Id = usize;
+
 #[derive(Deserialize)]
 pub struct Config {
     pub sky_color: Rgba<f32>,
@@ -30,6 +32,9 @@ pub struct Config {
     pub item_throw_max_w: f32,
     pub item_throw_scale: f32,
     pub throw_height: f32,
+    pub colors: Vec<Rgba<f32>>,
+    pub double_mailbox_probability: f64,
+    pub time_scale: f32,
 }
 
 #[derive(geng::asset::Load)]
@@ -84,10 +89,11 @@ struct Item {
     rot: f32,
     w: f32,
     half_size: vec2<f32>,
+    color: usize,
 }
 
 impl Item {
-    pub fn new(texture: &Rc<Texture>, scale: f32) -> Self {
+    pub fn new(texture: &Rc<Texture>, scale: f32, color: usize) -> Self {
         Self {
             texture: texture.clone(),
             pos: vec2::ZERO,
@@ -95,6 +101,7 @@ impl Item {
             rot: thread_rng().gen_range(0.0..2.0 * f32::PI),
             w: 0.0,
             half_size: vec2(texture.size().map(|x| x as f32).aspect(), 1.0) * scale,
+            color,
         }
     }
 }
@@ -106,14 +113,18 @@ struct ThrownItem {
     pub from: vec3<f32>,
     pub to: vec3<f32>,
     pub t: f32,
+    pub to_id: Id,
 }
 
 struct Mailbox {
+    pub id: Id,
     pub x: f32,
     pub latitude: f32,
+    pub color: usize,
 }
 
 struct Game {
+    next_id: Id,
     framebuffer_size: vec2<f32>,
     geng: Geng,
     assets: Rc<Assets>,
@@ -127,6 +138,7 @@ struct Game {
     draw3d: Draw3d,
     my_latitude: f32,
     road_mesh: ugli::VertexBuffer<draw3d::Vertex>,
+    transition: Option<geng::state::Transition>,
 }
 
 impl Game {
@@ -166,6 +178,8 @@ impl Game {
             config.earth_radius + config.camera_height,
         );
         Self {
+            transition: None,
+            next_id: 0,
             framebuffer_size: vec2::splat(1.0),
             geng: geng.clone(),
             assets: assets.clone(),
@@ -226,7 +240,11 @@ impl geng::State for Game {
                     .extend_uniform(self.config.hand_radius)
                     .contains(pos)
                 {
-                    self.holding = Some(Item::new(&self.assets.envelope, self.config.item_scale));
+                    self.holding = Some(Item::new(
+                        &self.assets.envelope,
+                        self.config.item_scale,
+                        thread_rng().gen_range(0..self.config.colors.len()),
+                    ));
                 }
             }
             geng::Event::MouseUp {
@@ -254,6 +272,7 @@ impl geng::State for Game {
                             to: self.mailbox_pos(mailbox).normalize_or_zero()
                                 * (self.config.earth_radius + self.config.mailbox_size),
                             t: 0.0,
+                            to_id: mailbox.id,
                         };
                         self.thrown_items.push(item);
                     } else {
@@ -270,11 +289,18 @@ impl geng::State for Game {
                     }
                 }
             }
+            geng::Event::KeyDown { key: geng::Key::R } => {
+                self.transition = Some(geng::state::Transition::Switch(Box::new(Game::new(
+                    &self.geng,
+                    &self.assets,
+                    &self.config,
+                ))));
+            }
             _ => {}
         }
     }
     fn update(&mut self, delta_time: f64) {
-        let delta_time = delta_time as f32;
+        let delta_time = delta_time as f32 * self.config.time_scale;
 
         for item in &mut self.juggling_items {
             item.vel.y -= self.config.gravity * delta_time;
@@ -293,11 +319,24 @@ impl geng::State for Game {
                 .mailboxes
                 .last()
                 .map_or(self.my_latitude, |mailbox| mailbox.latitude);
-            for x in [-1, 1] {
+            let (left, right) = if thread_rng().gen_bool(self.config.double_mailbox_probability) {
+                (true, true)
+            } else if thread_rng().gen() {
+                (true, false)
+            } else {
+                (false, true)
+            };
+            for (x, spawn) in itertools::izip![[-1, 1], [left, right]] {
+                if !spawn {
+                    continue;
+                }
                 self.mailboxes.push(Mailbox {
+                    id: self.next_id,
                     x: x as f32 * (self.config.road_width + self.config.mailbox_size / 2.0),
                     latitude: last_latitude + self.config.distance_between_mailboxes.to_radians(),
+                    color: thread_rng().gen_range(0..self.config.colors.len()),
                 });
+                self.next_id += 1;
             }
         }
 
@@ -305,8 +344,23 @@ impl geng::State for Game {
             item.t += delta_time;
             item.item.rot += item.item.w * delta_time;
         }
-        self.thrown_items
-            .retain(|item| item.t < self.config.throw_time);
+        self.thrown_items.retain(|item| {
+            if item.t < self.config.throw_time {
+                true
+            } else {
+                let index = self
+                    .mailboxes
+                    .iter()
+                    .position(|mailbox| mailbox.id == item.to_id);
+                if let Some(index) = index {
+                    let mailbox = &self.mailboxes[index];
+                    if mailbox.color == item.color {
+                        self.mailboxes.remove(index);
+                    }
+                }
+                false
+            }
+        });
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {
         self.framebuffer_size = framebuffer.size().map(|x| x as f32);
@@ -342,7 +396,7 @@ impl geng::State for Game {
                     * mat4::scale(item.half_size.extend(1.0) * self.config.item_throw_scale)
                     * mat4::translate(vec3(-1.0, -1.0, 0.0))
                     * mat4::scale_uniform(2.0),
-                Rgba::WHITE,
+                self.config.colors[item.color],
             );
         }
 
@@ -353,12 +407,11 @@ impl geng::State for Game {
                 &self.assets.mailbox,
                 self.mailbox_pos(mailbox),
                 vec2::splat(self.config.mailbox_size),
-                if Some(index) == hovered_mailbox {
-                    Rgba::RED
-                } else {
-                    Rgba::WHITE
-                },
+                self.config.colors[mailbox.color],
             );
+            if Some(index) == hovered_mailbox {
+                // TODO
+            }
         }
 
         self.geng.draw2d().draw2d(
@@ -370,7 +423,7 @@ impl geng::State for Game {
             self.geng.draw2d().draw2d(
                 framebuffer,
                 self.camera.as_2d(),
-                &draw2d::TexturedQuad::unit(&*item.texture)
+                &draw2d::TexturedQuad::unit_colored(&*item.texture, self.config.colors[item.color])
                     .scale(item.half_size * self.config.item_hold_scale)
                     .rotate(item.rot)
                     .translate(mouse_pos),
@@ -380,7 +433,7 @@ impl geng::State for Game {
             self.geng.draw2d().draw2d(
                 framebuffer,
                 self.camera.as_2d(),
-                &draw2d::TexturedQuad::unit(&*item.texture)
+                &draw2d::TexturedQuad::unit_colored(&*item.texture, self.config.colors[item.color])
                     .scale(item.half_size)
                     .rotate(item.rot)
                     .translate(item.pos),
@@ -398,6 +451,9 @@ impl geng::State for Game {
             .scale_uniform(self.config.hand_radius)
             .translate(mouse_pos),
         );
+    }
+    fn transition(&mut self) -> Option<geng::state::Transition> {
+        self.transition.take()
     }
 }
 
