@@ -79,6 +79,16 @@ impl geng::State for Game {
                     .screen_to_world(self.framebuffer_size, position.map(|x| x as f32));
                 if self.bag_position.contains(pos) {
                     self.holding = Some(Item::new(&self.assets.envelope, self.config.item_scale));
+                } else if let Some(index) = self.items.iter().rposition(|item| {
+                    (Quad::unit()
+                        .scale(item.half_size)
+                        .rotate(item.rot)
+                        .translate(item.pos)
+                        .transform
+                        .inverse()
+                        * pos.extend(1.0))
+                    .into_2d()
+                }) {
                 }
             }
             geng::Event::MouseUp {
