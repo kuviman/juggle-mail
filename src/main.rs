@@ -7,12 +7,15 @@ pub struct Config {
     pub throw_angle: f32,
     pub item_scale: f32,
     pub item_hold_scale: f32,
+    pub hand_radius: f32,
 }
 
 #[derive(geng::asset::Load)]
 pub struct Assets {
     envelope: Rc<ugli::Texture>,
     bag: ugli::Texture,
+    hand: ugli::Texture,
+    holding_hand: ugli::Texture,
 }
 
 struct Item {
@@ -153,6 +156,18 @@ impl geng::State for Game {
                     .translate(item.pos),
             );
         }
+
+        self.geng.draw2d().draw2d(
+            framebuffer,
+            &self.camera,
+            &draw2d::TexturedQuad::unit(if self.holding.is_some() {
+                &self.assets.holding_hand
+            } else {
+                &self.assets.hand
+            })
+            .scale_uniform(self.config.hand_radius)
+            .translate(mouse_pos),
+        );
     }
 }
 
