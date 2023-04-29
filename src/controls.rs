@@ -6,18 +6,25 @@ impl Game {
             .camera
             .as_2d()
             .screen_to_world(self.framebuffer_size, self.cursor);
-        if let Some(index) = self.juggling_items.iter().rposition(|item| {
-            Aabb2::ZERO.extend_uniform(1.0).contains(
-                (Quad::unit()
-                    .scale(item.half_size.map(|x| x + self.config.hand_radius))
-                    .rotate(item.rot)
-                    .translate(item.pos)
-                    .transform
-                    .inverse()
-                    * cursor_world.extend(1.0))
-                .into_2d(),
-            )
-        }) {
+        if let Some(index) = self
+            .juggling_items
+            .iter()
+            .enumerate()
+            .filter(|(_index, item)| {
+                Aabb2::ZERO.extend_uniform(1.0).contains(
+                    (Quad::unit()
+                        .scale(item.half_size.map(|x| x + self.config.hand_radius))
+                        .rotate(item.rot)
+                        .translate(item.pos)
+                        .transform
+                        .inverse()
+                        * cursor_world.extend(1.0))
+                    .into_2d(),
+                )
+            })
+            .min_by_key(|(_index, item)| r32((item.pos - cursor_world).len()))
+            .map(|(index, _item)| index)
+        {
             self.holding = Some(self.juggling_items.remove(index));
         } else if self
             .bag_position
