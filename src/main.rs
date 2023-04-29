@@ -8,6 +8,7 @@ pub struct Config {
     pub item_scale: f32,
     pub item_hold_scale: f32,
     pub hand_radius: f32,
+    pub item_max_w: f32,
 }
 
 #[derive(geng::asset::Load)]
@@ -34,7 +35,7 @@ impl Item {
             pos: vec2::ZERO,
             vel: vec2::ZERO,
             rot: thread_rng().gen_range(0.0..2.0 * f32::PI),
-            w: thread_rng().gen_range(-1.0..1.0),
+            w: 0.0,
             half_size: vec2(texture.size().map(|x| x as f32).aspect(), 1.0) * scale,
         }
     }
@@ -114,6 +115,7 @@ impl geng::State for Game {
                     item.vel = vec2(0.0, self.config.throw_speed).rotate(thread_rng().gen_range(
                         -self.config.throw_angle.to_radians()..self.config.throw_angle.to_radians(),
                     ));
+                    item.w = thread_rng().gen_range(-1.0..1.0) * self.config.item_max_w;
                     self.items.push(item);
                 }
             }
