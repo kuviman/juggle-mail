@@ -12,7 +12,6 @@ struct SpriteVertex {
 }
 
 pub struct Draw3d {
-    geng: Geng,
     assets: Rc<Assets>,
     quad: ugli::VertexBuffer<SpriteVertex>,
 }
@@ -20,7 +19,6 @@ pub struct Draw3d {
 impl Draw3d {
     pub fn new(geng: &Geng, assets: &Rc<Assets>) -> Self {
         Self {
-            geng: geng.clone(),
             assets: assets.clone(),
             quad: ugli::VertexBuffer::new_static(
                 geng.ugli(),
