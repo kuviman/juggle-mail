@@ -7,8 +7,7 @@ impl Game {
             return;
         }
 
-        self.score +=
-            delta_time * self.juggling_items.len() as f32 * self.config.juggling_score_multiplier;
+        self.add_raw_score(delta_time * self.config.juggling_score_multiplier);
         self.time_left -= delta_time;
 
         let delta_time = delta_time * self.config.time_scale;
@@ -17,6 +16,11 @@ impl Game {
         self.my_latitude += self.config.ride_speed * delta_time; // Move forward
         self.update_mailboxes();
         self.update_thrown_items(delta_time);
+    }
+
+    fn add_raw_score(&mut self, raw_score: f32) {
+        let multiplier = self.juggling_items.len() + 1;
+        self.score += raw_score * multiplier as f32;
     }
 
     fn update_juggling_items(&mut self, delta_time: f32) {
@@ -74,6 +78,7 @@ impl Game {
             item.t += delta_time;
             item.item.rot += item.item.w * delta_time;
         }
+        let mut raw_score_added = 0.0;
         self.thrown_items.retain(|item| {
             if item.t < self.config.throw_time {
                 true
@@ -85,7 +90,7 @@ impl Game {
                 if let Some(index) = index {
                     let mailbox = &self.mailboxes[index];
                     if mailbox.color == item.color {
-                        self.score += self.config.deliver_score;
+                        raw_score_added += self.config.deliver_score;
                         self.mailboxes.remove(index);
                     }
                 } else if self.lives != 0 {
@@ -94,5 +99,6 @@ impl Game {
                 false
             }
         });
+        self.add_raw_score(raw_score_added);
     }
 }
