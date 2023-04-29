@@ -80,12 +80,10 @@ impl geng::State for Game {
                 let pos = self
                     .camera
                     .screen_to_world(self.framebuffer_size, position.map(|x| x as f32));
-                if self.bag_position.contains(pos) {
-                    self.holding = Some(Item::new(&self.assets.envelope, self.config.item_scale));
-                } else if let Some(index) = self.items.iter().rposition(|item| {
+                if let Some(index) = self.items.iter().rposition(|item| {
                     Aabb2::ZERO.extend_uniform(1.0).contains(
                         (Quad::unit()
-                            .scale(item.half_size)
+                            .scale(item.half_size.map(|x| x + self.config.hand_radius))
                             .rotate(item.rot)
                             .translate(item.pos)
                             .transform
@@ -95,6 +93,12 @@ impl geng::State for Game {
                     )
                 }) {
                     self.holding = Some(self.items.remove(index));
+                } else if self
+                    .bag_position
+                    .extend_uniform(self.config.hand_radius)
+                    .contains(pos)
+                {
+                    self.holding = Some(Item::new(&self.assets.envelope, self.config.item_scale));
                 }
             }
             geng::Event::MouseUp {
