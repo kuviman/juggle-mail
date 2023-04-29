@@ -64,12 +64,12 @@ impl Game {
                 self.thrown_items.push(item);
             } else {
                 item.pos = cursor_world;
-                item.vel = (vec2(0.0, self.config.throw_target_height) - item.pos)
-                    .normalize_or_zero()
-                    .rotate(thread_rng().gen_range(
+                item.vel = (vec2(0.0, self.config.throw_target_height) - item.pos).rotate(
+                    thread_rng().gen_range(
                         -self.config.throw_angle.to_radians()..self.config.throw_angle.to_radians(),
-                    ))
-                    * self.config.throw_speed;
+                    ),
+                ) * self.config.throw_speed
+                    / self.config.throw_target_height;
                 item.w = thread_rng().gen_range(-1.0..1.0) * self.config.item_max_w;
                 self.juggling_items.push(item);
             }
