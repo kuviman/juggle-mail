@@ -160,10 +160,7 @@ impl Game {
 impl geng::State for Game {
     fn handle_event(&mut self, event: geng::Event) {
         match event {
-            geng::Event::MouseDown {
-                position,
-                button: geng::MouseButton::Left,
-            } => {
+            geng::Event::MouseDown { position, .. } => {
                 self.cursor = position.map(|x| x as f32);
                 self.start_drag();
             }
@@ -179,6 +176,12 @@ impl geng::State for Game {
             }
             geng::Event::KeyDown { key: geng::Key::R } => {
                 self.restart();
+            }
+            geng::Event::KeyDown { .. } => {
+                self.start_drag();
+            }
+            geng::Event::KeyUp { .. } => {
+                self.end_drag();
             }
             geng::Event::TouchStart { touches } => {
                 self.end_drag();
