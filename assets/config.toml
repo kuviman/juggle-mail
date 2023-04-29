@@ -1,7 +1,9 @@
 gravity = 10
 throw_speed = 10
-throw_angle = 20
+throw_angle = 10
 item_scale = 0.5
 item_hold_scale = 0.7
 hand_radius = 0.5
 item_max_w = 5
+throw_target_height = 10
+fov = 10

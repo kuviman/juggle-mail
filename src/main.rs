@@ -9,6 +9,8 @@ pub struct Config {
     pub item_hold_scale: f32,
     pub hand_radius: f32,
     pub item_max_w: f32,
+    pub throw_target_height: f32,
+    pub fov: f32,
 }
 
 #[derive(geng::asset::Load)]
@@ -57,7 +59,7 @@ impl Game {
         let camera = geng::Camera2d {
             center: vec2::ZERO,
             rotation: 0.0,
-            fov: 10.0,
+            fov: config.fov,
         };
         Self {
             framebuffer_size: vec2::splat(1.0),
@@ -112,9 +114,13 @@ impl geng::State for Game {
                     .screen_to_world(self.framebuffer_size, position.map(|x| x as f32));
                 if let Some(mut item) = self.holding.take() {
                     item.pos = pos;
-                    item.vel = vec2(0.0, self.config.throw_speed).rotate(thread_rng().gen_range(
-                        -self.config.throw_angle.to_radians()..self.config.throw_angle.to_radians(),
-                    ));
+                    item.vel = (vec2(0.0, self.config.throw_target_height) - item.pos)
+                        .normalize_or_zero()
+                        .rotate(thread_rng().gen_range(
+                            -self.config.throw_angle.to_radians()
+                                ..self.config.throw_angle.to_radians(),
+                        ))
+                        * self.config.throw_speed;
                     item.w = thread_rng().gen_range(-1.0..1.0) * self.config.item_max_w;
                     self.items.push(item);
                 }
