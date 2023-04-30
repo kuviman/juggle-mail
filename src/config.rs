@@ -50,4 +50,5 @@ pub struct Config {
     pub house_offset: f32,
     pub distance_between_houses: f32,
     pub house_size: f32,
+    pub multiplier_color: Rgba<f32>,
 }

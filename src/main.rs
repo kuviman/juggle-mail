@@ -102,6 +102,8 @@ struct Game {
     error_animation_time: f32,
     particles_ui: Vec<Particle>,
     particles_3d: Vec<Particle>,
+    last_score_text: String,
+    last_score_t: f32,
 }
 
 impl Drop for Game {
@@ -186,6 +188,8 @@ impl Game {
             cursor: vec2::ZERO,
             particles_3d: vec![],
             particles_ui: vec![],
+            last_score_t: 1.0,
+            last_score_text: "".to_owned(),
         }
     }
 

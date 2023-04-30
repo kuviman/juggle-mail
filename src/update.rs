@@ -4,6 +4,8 @@ impl Game {
     pub fn update_impl(&mut self, delta_time: f32) {
         self.real_time += delta_time;
 
+        self.last_score_t += delta_time;
+
         if self.time_left < 0.0 || self.lives == 0 {
             // TODO
             return;
@@ -36,8 +38,13 @@ impl Game {
     }
 
     fn add_raw_score(&mut self, raw_score: f32) {
-        let multiplier = self.juggling_items.len() + 1;
-        self.score += raw_score * multiplier as f32;
+        let multiplier = self.juggling_items.len() + 1 + self.holding.is_some() as usize;
+        let scored = raw_score * multiplier as f32;
+        self.score += scored;
+        if raw_score == self.config.deliver_score {
+            self.last_score_t = 0.0;
+            self.last_score_text = format!("+{}", scored.floor() as i32);
+        }
     }
 
     fn update_juggling_items(&mut self, delta_time: f32) {

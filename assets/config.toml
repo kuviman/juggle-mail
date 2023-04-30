@@ -52,6 +52,7 @@ sun_offset = 1
 house_offset = 2
 distance_between_houses = 10
 house_size = 2
+multiplier_color = "red"
 
 # TODO config screen
 start_time = 30

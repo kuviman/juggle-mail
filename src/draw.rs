@@ -289,6 +289,62 @@ impl Game {
             mat3::translate(top_left + vec2(0.5, -1.5)),
         );
 
+        let multiplier_text = format!(
+            "x{}",
+            1 + self.juggling_items.len() + self.holding.is_some() as usize
+        );
+        self.geng.draw2d().draw_textured(
+            framebuffer,
+            self.camera.as_2d(),
+            &{
+                let pad = 0.1;
+                let w = multiplier_text.len() as f32 * 0.5 + 1.0;
+                [
+                    draw2d::TexturedVertex {
+                        a_pos: top_left + vec2(0.0, -2.5 - pad),
+                        a_color: Rgba::WHITE,
+                        a_vt: vec2(1.0 - w - 0.5, 0.0),
+                    },
+                    draw2d::TexturedVertex {
+                        a_pos: top_left + vec2(0.0, -2.0 + pad),
+                        a_color: Rgba::WHITE,
+                        a_vt: vec2(1.0 - w - 0.5, 1.0),
+                    },
+                    draw2d::TexturedVertex {
+                        a_pos: top_left + vec2(0.5 + w, -2.0 + pad),
+                        a_color: Rgba::WHITE,
+                        a_vt: vec2(1.0, 1.0),
+                    },
+                    draw2d::TexturedVertex {
+                        a_pos: top_left + vec2(0.5 + w, -2.5 - pad),
+                        a_color: Rgba::WHITE,
+                        a_vt: vec2(1.0, 0.0),
+                    },
+                ]
+            },
+            &self.assets.score_background,
+            self.config.multiplier_color,
+            ugli::DrawMode::TriangleFan,
+        );
+        self.assets.font.draw(
+            framebuffer,
+            self.camera.as_2d(),
+            &multiplier_text,
+            Rgba::BLACK,
+            mat3::translate(top_left + vec2(0.5, -2.5)) * mat3::scale_uniform(0.5),
+        );
+
+        if self.last_score_t < 1.0 {
+            self.assets.font.draw(
+                framebuffer,
+                self.camera.as_2d(),
+                &self.last_score_text,
+                Rgba::new(0.0, 0.0, 0.0, 1.0 - self.last_score_t),
+                mat3::translate(top_left + vec2(multiplier_text.len() as f32 * 0.5 + 2.0, -2.5))
+                    * mat3::scale_uniform(0.5),
+            );
+        }
+
         // self.geng.default_font().draw(
         //     framebuffer,
         //     self.camera.as_2d(),
