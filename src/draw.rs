@@ -109,6 +109,16 @@ impl Game {
                 .rotate(self.real_time.sin() * 0.1)
                 .translate(vec2(self.bag_position.center().x, self.bag_position.min.y)),
         );
+        if self.bag_position.contains(cursor_world) {
+            self.geng.draw2d().draw2d(
+                framebuffer,
+                self.camera.as_2d(),
+                &draw2d::TexturedQuad::new(
+                    self.bag_position.extend_uniform(0.1),
+                    &self.assets.envelope_highlight,
+                ),
+            );
+        }
         if let Some(item) = &self.holding {
             self.geng.draw2d().draw2d(
                 framebuffer,
