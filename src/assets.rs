@@ -52,6 +52,7 @@ pub struct Assets {
     pub shaders: Shaders,
     pub sfx: Sfx,
     pub envelope: Rc<Texture>,
+    pub envelope_highlight: Texture,
     pub bag: Texture,
     pub hand: Texture,
     pub holding_hand: Texture,

@@ -3,6 +3,7 @@ use super::*;
 impl Game {
     pub fn draw_impl(&mut self, framebuffer: &mut ugli::Framebuffer) {
         self.camera.latitude = self.my_latitude;
+        let hovered_item = self.hovered_item();
         let hovered_mailbox = self.hovered_mailbox();
         ugli::clear(framebuffer, Some(self.config.sky_color), Some(1.0), None);
         self.draw3d.draw(
@@ -24,16 +25,17 @@ impl Game {
             let pos = item.from
                 + (item.to - item.from) * t
                 + up * (1.0 - (1.0 - t * 2.0).sqr()) * self.config.throw_height;
+            let matrix = mat4::translate(pos)
+                * mat4::rotate_x(-self.camera.latitude - self.camera.rot)
+                * mat4::rotate_z(item.rot)
+                * mat4::scale(item.half_size.extend(1.0) * self.config.item_throw_scale)
+                * mat4::translate(vec3(-1.0, -1.0, 0.0))
+                * mat4::scale_uniform(2.0);
             self.draw3d.draw_sprite_with_transform(
                 framebuffer,
                 &self.camera,
                 &item.texture,
-                mat4::translate(pos)
-                    * mat4::rotate_x(-self.camera.latitude - self.camera.rot)
-                    * mat4::rotate_z(item.rot)
-                    * mat4::scale(item.half_size.extend(1.0) * self.config.item_throw_scale)
-                    * mat4::translate(vec3(-1.0, -1.0, 0.0))
-                    * mat4::scale_uniform(2.0),
+                matrix,
                 self.config.mailbox_colors[item.color],
             );
         }
@@ -83,7 +85,17 @@ impl Game {
                 .translate(item.pos),
             );
         }
-
+        if let Some(index) = hovered_item {
+            let item = &self.juggling_items[index];
+            self.geng.draw2d().draw2d(
+                framebuffer,
+                self.camera.as_2d(),
+                &draw2d::TexturedQuad::unit(&self.assets.envelope_highlight)
+                    .scale(item.half_size * 1.1)
+                    .rotate(item.rot)
+                    .translate(item.pos),
+            );
+        }
         self.geng.draw2d().draw2d(
             framebuffer,
             self.camera.as_2d(),
