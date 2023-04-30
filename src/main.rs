@@ -5,20 +5,27 @@ mod camera;
 mod config;
 mod draw3d;
 mod font;
-mod util;
 mod game;
+mod main_menu;
+mod ui;
+mod util;
 
-use game::Game;
 use assets::*;
 use camera::*;
 use config::*;
 use draw3d::Draw3d;
 use font::*;
+use game::Game;
+use main_menu::MainMenu;
+use ui::WidgetExt;
 use util::*;
 
 fn main() {
-    let geng = Geng::new("Juggle Mail - by kuviman for LD53");
-    geng.window().set_cursor_type(geng::CursorType::None);
+    let geng = Geng::new_with(geng::ContextOptions {
+        title: "Juggle Mail - by kuviman for LD53".to_owned(),
+        target_ui_resolution: Some(vec2(800.0, 600.0)),
+        ..default()
+    });
     geng.clone().run_loading(async move {
         let assets: Rc<Assets> = geng
             .asset_manager()
@@ -29,6 +36,6 @@ fn main() {
             .await
             .unwrap();
         let config = Rc::new(config);
-        Game::new(&geng, &assets, &config)
+        MainMenu::new(&geng, &assets, &config)
     })
 }

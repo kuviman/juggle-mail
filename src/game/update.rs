@@ -28,7 +28,7 @@ impl Game {
 
         self.update_particles(delta_time);
 
-        let delta_time = delta_time * self.config.time_scale;
+        let delta_time = delta_time * self.diff.time_scale;
 
         self.update_juggling_items(delta_time);
         self.my_latitude += self.config.ride_speed * delta_time; // Move forward

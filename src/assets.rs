@@ -1,6 +1,14 @@
 use super::*;
 
 #[derive(geng::asset::Load)]
+pub struct UiSfx {
+    #[load(ext = "mp3")]
+    pub click: geng::Sound,
+    #[load(ext = "mp3")]
+    pub hover: geng::Sound,
+}
+
+#[derive(geng::asset::Load)]
 pub struct Shaders {
     pub sprite: ugli::Program,
     pub mesh3d: ugli::Program,
@@ -48,7 +56,19 @@ pub struct Sfx {
 }
 
 #[derive(geng::asset::Load)]
+pub struct DifficultyAssets {
+    #[load(listed_in = "_list.ron")]
+    pub game_time: Vec<Texture>,
+    #[load(listed_in = "_list.ron")]
+    pub time_scale: Vec<Texture>,
+    #[load(listed_in = "_list.ron")]
+    pub lives: Vec<Texture>,
+}
+
+#[derive(geng::asset::Load)]
 pub struct Assets {
+    pub difficulty: DifficultyAssets,
+    pub ui_sfx: UiSfx,
     pub shaders: Shaders,
     pub sfx: Sfx,
     #[load(path = "newspaper.png")]
@@ -74,6 +94,8 @@ pub struct Assets {
     pub timer_arrow: Texture,
     pub font: Font,
     pub score_background: Texture,
+    pub main_menu: Texture,
+    pub play_button: Texture,
 }
 
 fn make_looped(sound: &mut geng::Sound) {

@@ -64,6 +64,7 @@ struct House {
 }
 
 pub struct Game {
+    diff: Difficulty,
     real_time: f32,
     score: f32,
     time_left: f32,
@@ -126,7 +127,7 @@ impl Game {
                 && p.y < self.config.mailbox_size
         })
     }
-    pub fn new(geng: &Geng, assets: &Rc<Assets>, config: &Rc<Config>) -> Self {
+    pub fn new(geng: &Geng, assets: &Rc<Assets>, config: &Rc<Config>, diff: Difficulty) -> Self {
         let camera = Camera::new(
             config.fov.to_radians(),
             config.ui_fov,
@@ -136,14 +137,15 @@ impl Game {
         let mut music = assets.music.play();
         music.set_volume(0.4);
         Self {
+            diff: diff.clone(),
             houses: vec![],
             real_time: 0.0,
             error_animation_time: 1.0,
             throw_animation_time: 0.0,
             music,
-            lives: config.lives,
+            lives: diff.lives,
             score: 0.0,
-            time_left: config.game_time,
+            time_left: diff.game_time,
             transition: None,
             next_id: 0,
             framebuffer_size: vec2::splat(1.0),
@@ -186,6 +188,7 @@ impl Game {
             &self.geng,
             &self.assets,
             &self.config,
+            self.diff.clone(),
         ))));
     }
 }
@@ -209,6 +212,11 @@ impl geng::State for Game {
             }
             geng::Event::KeyDown { key: geng::Key::R } => {
                 self.restart();
+            }
+            geng::Event::KeyDown {
+                key: geng::Key::Escape | geng::Key::Backspace | geng::Key::Enter,
+            } => {
+                self.transition = Some(geng::state::Transition::Pop);
             }
             geng::Event::KeyDown { .. } => {
                 self.start_drag();
@@ -235,6 +243,7 @@ impl geng::State for Game {
         }
     }
     fn update(&mut self, delta_time: f64) {
+        self.geng.window().set_cursor_type(geng::CursorType::None);
         self.update_impl(delta_time as f32);
     }
     fn draw(&mut self, framebuffer: &mut ugli::Framebuffer) {

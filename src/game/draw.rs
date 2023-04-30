@@ -5,7 +5,7 @@ impl Game {
         self.camera.latitude = self.my_latitude;
         let hovered_item = self.hovered_item();
         let hovered_mailbox = self.hovered_mailbox();
-        let progress = 1.0 - self.time_left / self.config.game_time;
+        let progress = 1.0 - self.time_left / self.diff.game_time;
 
         // Background
         ugli::clear(
@@ -206,10 +206,10 @@ impl Game {
 
         self.draw_particles(framebuffer);
 
-        for i in 0..self.config.lives {
+        for i in 0..self.diff.lives {
             const W: f32 = 2.0;
             let pos = vec2(
-                -W / 2.0 + W * i as f32 / (self.config.lives.max(2) - 1) as f32,
+                -W / 2.0 + W * i as f32 / (self.diff.lives.max(2) - 1) as f32,
                 4.5,
             );
             self.geng.draw2d().draw2d(

@@ -26,9 +26,6 @@ pub struct Config {
     pub throw_height: f32,
     pub mailbox_colors: Vec<Rgba<f32>>,
     pub double_mailbox_probability: f64,
-    pub time_scale: f32,
-    pub game_time: f32,
-    pub lives: usize,
     pub juggling_score_multiplier: f32,
     pub deliver_score: f32,
     pub spawn_distance: f32,
@@ -51,4 +48,15 @@ pub struct Config {
     pub distance_between_houses: f32,
     pub house_size: f32,
     pub multiplier_color: Rgba<f32>,
+
+    pub time_scale: Vec<f32>,
+    pub game_time: Vec<f32>,
+    pub lives: Vec<usize>,
+}
+
+#[derive(Clone)]
+pub struct Difficulty {
+    pub time_scale: f32,
+    pub game_time: f32,
+    pub lives: usize,
 }
