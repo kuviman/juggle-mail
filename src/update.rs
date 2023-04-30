@@ -10,6 +10,12 @@ impl Game {
         self.add_raw_score(delta_time * self.config.juggling_score_multiplier);
         self.time_left -= delta_time;
 
+        self.throw_animation_time =
+            (self.throw_animation_time + delta_time / self.config.throw_animation_time).min(1.0);
+        if self.holding.is_some() {
+            self.throw_animation_time = 0.0;
+        }
+
         let delta_time = delta_time * self.config.time_scale;
 
         self.update_juggling_items(delta_time);

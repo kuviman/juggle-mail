@@ -33,4 +33,7 @@ pub struct Config {
     pub deliver_score: f32,
     pub spawn_distance: f32,
     pub despawn_distance: f32,
+    pub hand_rotation: f32,
+    pub throw_animation_time: f32,
+    pub throw_hand_distance: f32,
 }

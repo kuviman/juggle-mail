@@ -35,6 +35,9 @@ juggling_score_multiplier = 100
 deliver_score = 1000
 spawn_distance = 0
 despawn_distance = 0
+hand_rotation = 20
+throw_animation_time = 0.2
+throw_hand_distance = 0.05
 
 # TODO config screen
 start_time = 30

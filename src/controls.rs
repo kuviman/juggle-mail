@@ -47,6 +47,7 @@ impl Game {
             .as_2d()
             .screen_to_world(self.framebuffer_size, self.cursor);
         if let Some(mut item) = self.holding.take() {
+            self.throw_animation_time = 0.0;
             if let Some(index) = self.hovered_mailbox() {
                 let mailbox = &self.mailboxes[index];
                 item.w = self.config.item_throw_max_w * mailbox.x.signum();

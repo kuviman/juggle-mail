@@ -92,8 +92,17 @@ impl Game {
             } else {
                 &self.assets.hand
             })
+            .rotate(
+                (1.0 - self.cursor.x / self.framebuffer_size.x * 2.0)
+                    * self.config.hand_rotation.to_radians(),
+            )
             .scale_uniform(self.config.hand_radius)
-            .translate(cursor_world),
+            .translate(
+                cursor_world
+                    + (vec2(0.0, self.config.throw_target_height) - cursor_world)
+                        * (1.0 - (self.throw_animation_time * 2.0 - 1.0).sqr())
+                        * self.config.throw_hand_distance,
+            ),
         );
 
         self.geng.default_font().draw(

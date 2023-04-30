@@ -79,6 +79,7 @@ struct Game {
     lives: usize,
     cursor: vec2<f32>,
     music: geng::SoundEffect,
+    throw_animation_time: f32,
 }
 
 impl Drop for Game {
@@ -123,6 +124,7 @@ impl Game {
         let mut music = assets.music.play();
         music.set_volume(0.4);
         Self {
+            throw_animation_time: 0.0,
             music,
             lives: config.lives,
             score: 0.0,
