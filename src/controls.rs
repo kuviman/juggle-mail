@@ -49,7 +49,7 @@ impl Game {
         if let Some(mut item) = self.holding.take() {
             if let Some(index) = self.hovered_mailbox() {
                 let mailbox = &self.mailboxes[index];
-                item.w = thread_rng().gen_range(-1.0..1.0) * self.config.item_throw_max_w;
+                item.w = self.config.item_throw_max_w * mailbox.x.signum();
                 // Shoutout to Foggy's mom
                 let mut pixel_ray = self.camera.pixel_ray(self.framebuffer_size, self.cursor);
                 let cam_dir = self.camera.dir();
@@ -64,6 +64,7 @@ impl Game {
                     to_id: mailbox.id,
                 };
                 self.thrown_items.push(item);
+                self.assets.sfx.throw.play_random_pitch();
             } else {
                 item.pos = cursor_world;
                 item.vel = (vec2(0.0, self.config.throw_target_height) - item.pos).rotate(
