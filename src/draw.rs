@@ -40,7 +40,7 @@ impl Game {
             );
         }
 
-        for (index, mailbox) in self.mailboxes.iter().enumerate() {
+        for mailbox in &self.mailboxes {
             self.draw3d.draw_sprite(
                 framebuffer,
                 &self.camera,
@@ -49,9 +49,6 @@ impl Game {
                 vec2::splat(self.config.mailbox_size) * vec2(-mailbox.x.signum(), 1.0),
                 self.config.mailbox_colors[mailbox.color],
             );
-            if Some(index) == hovered_mailbox {
-                // TODO
-            }
         }
 
         self.geng.draw2d().draw2d(
@@ -129,6 +126,26 @@ impl Game {
                         * self.config.throw_hand_distance,
             ),
         );
+
+        if let Some(index) = hovered_mailbox {
+            let mailbox = &self.mailboxes[index];
+            let camera_up = vec3::cross(self.camera.dir(), vec3(1.0, 0.0, 0.0)).normalize_or_zero();
+            let pos = self.mailbox_pos(mailbox) + camera_up * self.config.mailbox_size * 0.75;
+            if let Some(pos) = self.camera.world_to_screen(self.framebuffer_size, pos) {
+                let pos = self
+                    .camera
+                    .as_2d()
+                    .screen_to_world(self.framebuffer_size, pos);
+                self.geng.draw2d().draw2d(
+                    framebuffer,
+                    self.camera.as_2d(),
+                    &draw2d::TexturedQuad::unit(&self.assets.aim)
+                        .scale_uniform(1.0)
+                        .rotate(self.real_time)
+                        .translate(pos),
+                );
+            }
+        }
 
         self.geng.default_font().draw(
             framebuffer,

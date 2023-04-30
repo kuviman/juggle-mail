@@ -57,6 +57,7 @@ pub struct Assets {
     pub hand: Texture,
     pub holding_hand: Texture,
     pub mailbox: Texture,
+    pub aim: Texture,
     #[load(postprocess = "road_postprocess")]
     pub road: Texture,
     #[load(ext = "mp3", postprocess = "make_looped")]
