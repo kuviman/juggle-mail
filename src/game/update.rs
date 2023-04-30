@@ -1,3 +1,5 @@
+use crate::final_screen::FinalScreen;
+
 use super::*;
 
 impl Game {
@@ -7,8 +9,20 @@ impl Game {
         self.last_score_t += delta_time;
 
         if self.time_left < 0.0 || self.lives == 0 {
-            // TODO
-            return;
+            if self.end_timer == 0.0 && self.lives != 0 {
+                self.assets.sfx.timer.play();
+            }
+            self.end_timer += delta_time / 3.0;
+            if self.end_timer > 1.0 {
+                self.transition =
+                    Some(geng::state::Transition::Switch(Box::new(FinalScreen::new(
+                        &self.geng,
+                        &self.assets,
+                        &self.config,
+                        self.diff.clone(),
+                        self.score,
+                    ))));
+            }
         }
 
         self.add_raw_score(delta_time * self.config.juggling_score_multiplier);
@@ -170,6 +184,7 @@ impl Game {
             self.assets.sfx.explosion.play_random_pitch();
             if self.lives == 0 {
                 self.assets.sfx.lose.play();
+                self.music.stop();
             }
         }
     }

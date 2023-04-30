@@ -345,6 +345,17 @@ impl Game {
             );
         }
 
+        if self.end_timer != 0.0 {
+            self.geng.draw2d().draw2d(
+                framebuffer,
+                &geng::PixelPerfectCamera,
+                &draw2d::Quad::new(
+                    Aabb2::point(vec2::ZERO).extend_positive(self.framebuffer_size),
+                    Rgba::new(0.0, 0.0, 0.0, self.end_timer),
+                ),
+            );
+        }
+
         // self.geng.default_font().draw(
         //     framebuffer,
         //     self.camera.as_2d(),

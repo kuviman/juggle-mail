@@ -93,6 +93,7 @@ pub struct Game {
     particles_3d: Vec<Particle>,
     last_score_text: String,
     last_score_t: f32,
+    end_timer: f32,
 }
 
 impl Drop for Game {
@@ -137,6 +138,7 @@ impl Game {
         let mut music = assets.music.play();
         music.set_volume(0.4);
         Self {
+            end_timer: 0.0,
             diff: diff.clone(),
             houses: vec![],
             real_time: 0.0,

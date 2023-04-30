@@ -4,6 +4,7 @@ mod assets;
 mod camera;
 mod config;
 mod draw3d;
+mod final_screen;
 mod font;
 mod game;
 mod main_menu;

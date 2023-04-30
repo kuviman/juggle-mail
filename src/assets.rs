@@ -53,6 +53,8 @@ pub struct Sfx {
     pub lose: geng::Sound,
     #[load(ext = "mp3")]
     pub error: geng::Sound,
+    #[load(ext = "mp3")]
+    pub timer: geng::Sound,
 }
 
 #[derive(geng::asset::Load)]
@@ -95,7 +97,10 @@ pub struct Assets {
     pub font: Font,
     pub score_background: Texture,
     pub main_menu: Texture,
+    pub final_screen: Texture,
     pub play_button: Texture,
+    pub play_again: Texture,
+    pub menu: Texture,
 }
 
 fn make_looped(sound: &mut geng::Sound) {

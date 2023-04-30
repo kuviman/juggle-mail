@@ -143,3 +143,34 @@ pub trait WidgetExt: geng::ui::Widget + Sized {
 }
 
 impl<T: geng::ui::Widget> WidgetExt for T {}
+
+pub struct Text<'a> {
+    font: &'a Font,
+    text: String,
+}
+
+impl<'a> Text<'a> {
+    pub fn new(font: &'a Font, text: String) -> Self {
+        Self { font, text }
+    }
+}
+
+impl geng::ui::Widget for Text<'_> {
+    fn calc_constraints(
+        &mut self,
+        _children: &geng::ui::ConstraintsContext,
+    ) -> geng::ui::Constraints {
+        default()
+    }
+    fn draw(&mut self, cx: &mut geng::ui::DrawContext) {
+        self.font.draw(
+            cx.framebuffer,
+            &geng::PixelPerfectCamera,
+            &self.text,
+            "#858585".try_into().unwrap(),
+            mat3::translate(cx.position.top_left().map(|x| x as f32))
+                * mat3::scale_uniform(cx.position.height() as f32)
+                * mat3::translate(-vec2(self.text.len() as f32 / 2.0, 0.0)),
+        );
+    }
+}
