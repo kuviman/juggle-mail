@@ -38,6 +38,9 @@ impl Game {
                 self.config.item_scale,
                 thread_rng().gen_range(0..self.config.mailbox_colors.len()),
             ));
+        } else {
+            self.error_animation_time = 0.0;
+            self.assets.sfx.error.play_random_pitch();
         }
     }
 

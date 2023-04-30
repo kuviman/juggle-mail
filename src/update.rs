@@ -2,6 +2,8 @@ use super::*;
 
 impl Game {
     pub fn update_impl(&mut self, delta_time: f32) {
+        self.real_time += delta_time;
+
         if self.time_left < 0.0 || self.lives == 0 {
             // TODO
             return;
@@ -14,6 +16,12 @@ impl Game {
             (self.throw_animation_time + delta_time / self.config.throw_animation_time).min(1.0);
         if self.holding.is_some() {
             self.throw_animation_time = 0.0;
+        }
+
+        self.error_animation_time =
+            (self.error_animation_time + delta_time / self.config.error_animation_time).min(1.0);
+        if self.holding.is_some() {
+            self.error_animation_time = 1.0;
         }
 
         let delta_time = delta_time * self.config.time_scale;

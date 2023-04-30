@@ -38,6 +38,9 @@ despawn_distance = 0
 hand_rotation = 20
 throw_animation_time = 0.2
 throw_hand_distance = 0.05
+error_animation_time = 0.2
+error_animation_freq = 50
+error_animation_distance = 0.2
 
 # TODO config screen
 start_time = 30

@@ -36,4 +36,7 @@ pub struct Config {
     pub hand_rotation: f32,
     pub throw_animation_time: f32,
     pub throw_hand_distance: f32,
+    pub error_animation_time: f32,
+    pub error_animation_distance: f32,
+    pub error_animation_freq: f32,
 }

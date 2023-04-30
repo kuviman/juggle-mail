@@ -87,11 +87,24 @@ impl Game {
         self.geng.draw2d().draw2d(
             framebuffer,
             self.camera.as_2d(),
-            &draw2d::TexturedQuad::unit(if self.holding.is_some() {
-                &self.assets.holding_hand
-            } else {
-                &self.assets.hand
-            })
+            &draw2d::TexturedQuad::unit_colored(
+                if self.holding.is_some() {
+                    &self.assets.holding_hand
+                } else {
+                    &self.assets.hand
+                },
+                if self.error_animation_time < 1.0 {
+                    Rgba::RED
+                } else {
+                    Rgba::WHITE
+                },
+            )
+            .translate(vec2(
+                (1.0 - (self.error_animation_time * 2.0 - 1.0).sqr())
+                    * self.config.error_animation_distance
+                    * (self.real_time * self.config.error_animation_freq).sin(),
+                0.0,
+            ))
             .rotate(
                 (1.0 - self.cursor.x / self.framebuffer_size.x * 2.0)
                     * self.config.hand_rotation.to_radians(),

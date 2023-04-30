@@ -59,6 +59,7 @@ struct Mailbox {
 }
 
 struct Game {
+    real_time: f32,
     score: f32,
     time_left: f32,
     next_id: Id,
@@ -80,6 +81,7 @@ struct Game {
     cursor: vec2<f32>,
     music: geng::SoundEffect,
     throw_animation_time: f32,
+    error_animation_time: f32,
 }
 
 impl Drop for Game {
@@ -124,6 +126,8 @@ impl Game {
         let mut music = assets.music.play();
         music.set_volume(0.4);
         Self {
+            real_time: 0.0,
+            error_animation_time: 1.0,
             throw_animation_time: 0.0,
             music,
             lives: config.lives,
