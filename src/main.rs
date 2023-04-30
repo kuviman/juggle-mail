@@ -24,11 +24,11 @@ struct Item {
     rot: f32,
     w: f32,
     half_size: vec2<f32>,
-    color: usize,
+    color: Rgba<f32>,
 }
 
 impl Item {
-    pub fn new(texture: &Rc<Texture>, scale: f32, color: usize) -> Self {
+    pub fn new(texture: &Rc<Texture>, scale: f32) -> Self {
         Self {
             texture: texture.clone(),
             pos: vec2::ZERO,
@@ -36,7 +36,15 @@ impl Item {
             rot: thread_rng().gen_range(0.0..2.0 * f32::PI),
             w: 0.0,
             half_size: vec2(texture.size().map(|x| x as f32).aspect(), 1.0) * scale,
-            color,
+            color: {
+                let c = thread_rng().gen_range(0.8..1.0);
+                Rgba::new(
+                    thread_rng().gen_range(0.9..1.0),
+                    thread_rng().gen_range(0.9..1.0),
+                    thread_rng().gen_range(0.9..1.0),
+                    1.0,
+                )
+            },
         }
     }
 }

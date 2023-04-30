@@ -36,7 +36,7 @@ impl Game {
                 &self.camera,
                 &item.texture,
                 matrix,
-                self.config.mailbox_colors[item.color],
+                item.color,
             );
         }
 
@@ -60,26 +60,20 @@ impl Game {
             self.geng.draw2d().draw2d(
                 framebuffer,
                 self.camera.as_2d(),
-                &draw2d::TexturedQuad::unit_colored(
-                    &*item.texture,
-                    self.config.mailbox_colors[item.color],
-                )
-                .scale(item.half_size * self.config.item_hold_scale)
-                .rotate(item.rot)
-                .translate(cursor_world),
+                &draw2d::TexturedQuad::unit_colored(&*item.texture, item.color)
+                    .scale(item.half_size * self.config.item_hold_scale)
+                    .rotate(item.rot)
+                    .translate(cursor_world),
             );
         }
         for item in &self.juggling_items {
             self.geng.draw2d().draw2d(
                 framebuffer,
                 self.camera.as_2d(),
-                &draw2d::TexturedQuad::unit_colored(
-                    &*item.texture,
-                    self.config.mailbox_colors[item.color],
-                )
-                .scale(item.half_size)
-                .rotate(item.rot)
-                .translate(item.pos),
+                &draw2d::TexturedQuad::unit_colored(&*item.texture, item.color)
+                    .scale(item.half_size)
+                    .rotate(item.rot)
+                    .translate(item.pos),
             );
         }
         if let Some(index) = hovered_item {

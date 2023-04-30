@@ -39,11 +39,7 @@ impl Game {
             .contains(cursor_world)
         {
             self.assets.sfx.pick.play_random_pitch();
-            self.holding = Some(Item::new(
-                &self.assets.envelope,
-                self.config.item_scale,
-                thread_rng().gen_range(0..self.config.mailbox_colors.len()),
-            ));
+            self.holding = Some(Item::new(&self.assets.envelope, self.config.item_scale));
         } else {
             self.error_animation_time = 0.0;
             self.assets.sfx.error.play_random_pitch();

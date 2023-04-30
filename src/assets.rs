@@ -51,6 +51,7 @@ pub struct Sfx {
 pub struct Assets {
     pub shaders: Shaders,
     pub sfx: Sfx,
+    #[load(path = "newspaper.png")]
     pub envelope: Rc<Texture>,
     pub envelope_highlight: Texture,
     pub bag: Texture,
