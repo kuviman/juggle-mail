@@ -5,7 +5,36 @@ impl Game {
         self.camera.latitude = self.my_latitude;
         let hovered_item = self.hovered_item();
         let hovered_mailbox = self.hovered_mailbox();
-        ugli::clear(framebuffer, Some(self.config.sky_color), Some(1.0), None);
+        let progress = 1.0 - self.time_left / self.config.start_time;
+
+        // Background
+        ugli::clear(
+            framebuffer,
+            Some(Rgba::lerp(
+                self.config.sky_color[0],
+                self.config.sky_color[1],
+                progress,
+            )),
+            None,
+            None,
+        );
+        self.geng.draw2d().draw2d(
+            framebuffer,
+            self.camera.as_2d(),
+            &draw2d::TexturedQuad::unit(&self.assets.sun)
+                .scale_uniform(self.config.sun_size)
+                .rotate(self.real_time.cos() * 0.2)
+                .translate({
+                    let from = vec2(-self.config.sun_offset, self.camera.fov() / 2.0 * 0.4);
+                    let to = vec2(
+                        self.config.sun_offset,
+                        self.camera.fov() / 2.0 + self.config.sun_size,
+                    );
+                    from + (to - from) * progress
+                }),
+        );
+
+        ugli::clear(framebuffer, None, Some(1.0), None);
         self.draw3d.draw(
             framebuffer,
             &self.camera,

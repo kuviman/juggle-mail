@@ -2,7 +2,7 @@ use super::*;
 
 #[derive(Deserialize)]
 pub struct Config {
-    pub sky_color: Rgba<f32>,
+    pub sky_color: [Rgba<f32>; 2],
     pub gravity: f32,
     pub throw_speed: f32,
     pub throw_angle: f32,
@@ -45,4 +45,6 @@ pub struct Config {
     pub particle_lifetime: f32,
     pub explosion_color: Rgba<f32>,
     pub score_color: Rgba<f32>,
+    pub sun_size: f32,
+    pub sun_offset: f32,
 }

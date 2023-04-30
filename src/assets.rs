@@ -65,6 +65,7 @@ pub struct Assets {
     #[load(ext = "mp3", postprocess = "make_looped")]
     pub music: geng::Sound,
     pub particle: Texture,
+    pub sun: Texture,
 }
 
 fn make_looped(sound: &mut geng::Sound) {

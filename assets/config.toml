@@ -9,7 +9,7 @@ throw_target_height = 10
 ui_fov = 10
 fov = 90
 earth_radius = 10
-sky_color = "#aaf"
+sky_color = ["#faa", "#aaf"]
 ride_speed = 0.3
 camera_height = 1
 camera_rot = 50
@@ -47,6 +47,8 @@ particle_size = 0.3
 particle_lifetime = 0.5
 explosion_color = "#f70"
 score_color = "#07f"
+sun_size = 0.5
+sun_offset = 2
 
 # TODO config screen
 start_time = 30
