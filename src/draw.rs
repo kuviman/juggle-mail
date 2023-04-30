@@ -5,7 +5,7 @@ impl Game {
         self.camera.latitude = self.my_latitude;
         let hovered_item = self.hovered_item();
         let hovered_mailbox = self.hovered_mailbox();
-        let progress = 1.0 - self.time_left / self.config.start_time;
+        let progress = 1.0 - self.time_left / self.config.game_time;
 
         // Background
         ugli::clear(

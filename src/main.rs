@@ -155,7 +155,7 @@ impl Game {
             music,
             lives: config.lives,
             score: 0.0,
-            time_left: config.start_time,
+            time_left: config.game_time,
             transition: None,
             next_id: 0,
             framebuffer_size: vec2::splat(1.0),

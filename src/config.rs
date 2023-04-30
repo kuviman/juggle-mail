@@ -27,7 +27,7 @@ pub struct Config {
     pub mailbox_colors: Vec<Rgba<f32>>,
     pub double_mailbox_probability: f64,
     pub time_scale: f32,
-    pub start_time: f32,
+    pub game_time: f32,
     pub lives: usize,
     pub juggling_score_multiplier: f32,
     pub deliver_score: f32,
