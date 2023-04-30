@@ -35,6 +35,7 @@ impl Game {
             } else {
                 if self.lives != 0 {
                     self.lives -= 1;
+                    self.assets.sfx.explosion.play_random_pitch();
                 }
                 false
             }
@@ -95,6 +96,7 @@ impl Game {
                     }
                 } else if self.lives != 0 {
                     self.lives -= 1;
+                    self.assets.sfx.explosion.play_random_pitch();
                 }
                 false
             }

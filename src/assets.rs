@@ -37,6 +37,8 @@ pub struct Sfx {
     pub pick: geng::Sound,
     #[load(ext = "mp3")]
     pub throw: geng::Sound,
+    #[load(ext = "mp3")]
+    pub explosion: geng::Sound,
 }
 
 #[derive(geng::asset::Load)]
