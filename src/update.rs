@@ -29,17 +29,18 @@ impl Game {
             item.pos += item.vel * delta_time;
             item.rot += item.w * delta_time;
         }
+        let mut lives_lost = 0;
         self.juggling_items.retain(|item| {
             if item.pos.y > self.bag_position.min.y {
                 true
             } else {
-                if self.lives != 0 {
-                    self.lives -= 1;
-                    self.assets.sfx.explosion.play_random_pitch();
-                }
+                lives_lost += 1;
                 false
             }
         });
+        for _ in 0..lives_lost {
+            self.lose_life();
+        }
     }
 
     fn update_mailboxes(&mut self) {
@@ -80,6 +81,7 @@ impl Game {
             item.item.rot += item.item.w * delta_time;
         }
         let mut raw_score_added = 0.0;
+        let mut lives_lost = 0;
         self.thrown_items.retain(|item| {
             if item.t < self.config.throw_time {
                 true
@@ -95,13 +97,25 @@ impl Game {
                         self.assets.sfx.score.play_random_pitch();
                         self.mailboxes.remove(index);
                     }
-                } else if self.lives != 0 {
-                    self.lives -= 1;
-                    self.assets.sfx.explosion.play_random_pitch();
+                } else {
+                    lives_lost += 1;
                 }
                 false
             }
         });
+        for _ in 0..lives_lost {
+            self.lose_life();
+        }
         self.add_raw_score(raw_score_added);
+    }
+
+    fn lose_life(&mut self) {
+        if self.lives != 0 {
+            self.lives -= 1;
+            self.assets.sfx.explosion.play_random_pitch();
+            if self.lives == 0 {
+                self.assets.sfx.lose.play();
+            }
+        }
     }
 }
