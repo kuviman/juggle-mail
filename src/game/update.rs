@@ -52,6 +52,9 @@ impl Game {
     }
 
     fn add_raw_score(&mut self, raw_score: f32) {
+        if self.end_timer != 0.0 {
+            return;
+        }
         let multiplier = self.juggling_items.len() + 1 + self.holding.is_some() as usize;
         let scored = raw_score * multiplier as f32;
         self.score += scored;
