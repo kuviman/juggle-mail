@@ -61,6 +61,7 @@ impl Draw3d {
                 camera.uniforms(framebuffer.size().map(|x| x as f32)),
             ),
             ugli::DrawParameters {
+                blend_mode: Some(ugli::BlendMode::straight_alpha()),
                 depth_func: Some(ugli::DepthFunc::Less),
                 ..default()
             },
@@ -107,6 +108,7 @@ impl Draw3d {
                 camera.uniforms(framebuffer.size().map(|x| x as f32)),
             ),
             ugli::DrawParameters {
+                blend_mode: Some(ugli::BlendMode::straight_alpha()),
                 depth_func: Some(ugli::DepthFunc::Less),
                 ..default()
             },

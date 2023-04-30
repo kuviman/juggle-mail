@@ -41,6 +41,11 @@ throw_hand_distance = 0.05
 error_animation_time = 0.2
 error_animation_freq = 50
 error_animation_distance = 0.2
+particle_count = 20
+particle_speed = 1
+particle_size = 0.3
+particle_lifetime = 0.5
+explosion_color = "#f70"
 
 # TODO config screen
 start_time = 30

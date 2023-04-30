@@ -151,6 +151,8 @@ impl Game {
             }
         }
 
+        self.draw_particles(framebuffer);
+
         self.geng.default_font().draw(
             framebuffer,
             self.camera.as_2d(),

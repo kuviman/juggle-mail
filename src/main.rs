@@ -6,6 +6,7 @@ mod config;
 mod controls;
 mod draw;
 mod draw3d;
+mod particle;
 mod update;
 mod util;
 
@@ -13,6 +14,7 @@ use assets::*;
 use camera::*;
 use config::*;
 use draw3d::Draw3d;
+use particle::*;
 use util::*;
 
 type Id = usize;
@@ -89,6 +91,8 @@ struct Game {
     music: geng::SoundEffect,
     throw_animation_time: f32,
     error_animation_time: f32,
+    particles_ui: Vec<Particle>,
+    particles_3d: Vec<Particle>,
 }
 
 impl Drop for Game {
@@ -170,6 +174,8 @@ impl Game {
             }),
             thrown_items: vec![],
             cursor: vec2::ZERO,
+            particles_3d: vec![],
+            particles_ui: vec![],
         }
     }
 

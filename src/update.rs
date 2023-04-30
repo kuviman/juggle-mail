@@ -24,6 +24,8 @@ impl Game {
             self.error_animation_time = 1.0;
         }
 
+        self.update_particles(delta_time);
+
         let delta_time = delta_time * self.config.time_scale;
 
         self.update_juggling_items(delta_time);
@@ -44,14 +46,20 @@ impl Game {
             item.rot += item.w * delta_time;
         }
         let mut lives_lost = 0;
+        let mut spawn_particles = None;
         self.juggling_items.retain(|item| {
             if item.pos.y > self.bag_position.min.y {
                 true
             } else {
                 lives_lost += 1;
+                spawn_particles = Some((item.pos, self.config.explosion_color));
                 false
             }
         });
+        if let Some((pos, color)) = spawn_particles {
+            self.particles_ui
+                .extend(self.spawn_particles(pos.extend(0.0), color));
+        }
         for _ in 0..lives_lost {
             self.lose_life();
         }
@@ -97,6 +105,7 @@ impl Game {
         }
         let mut raw_score_added = 0.0;
         let mut lives_lost = 0;
+        let mut spawn_particles = None;
         self.thrown_items.retain(|item| {
             if item.t < self.config.throw_time {
                 true
@@ -109,12 +118,17 @@ impl Game {
                     raw_score_added += self.config.deliver_score;
                     self.assets.sfx.score.play_random_pitch();
                     self.mailboxes.remove(index);
+                    spawn_particles = Some((item.to, Rgba::GREEN));
                 } else {
+                    spawn_particles = Some((item.to, self.config.explosion_color));
                     lives_lost += 1;
                 }
                 false
             }
         });
+        if let Some((pos, color)) = spawn_particles {
+            self.particles_3d.extend(self.spawn_particles(pos, color));
+        }
         for _ in 0..lives_lost {
             self.lose_life();
         }

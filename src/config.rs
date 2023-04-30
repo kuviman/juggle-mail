@@ -39,4 +39,9 @@ pub struct Config {
     pub error_animation_time: f32,
     pub error_animation_distance: f32,
     pub error_animation_freq: f32,
+    pub particle_count: usize,
+    pub particle_speed: f32,
+    pub particle_size: f32,
+    pub particle_lifetime: f32,
+    pub explosion_color: Rgba<f32>,
 }
