@@ -92,6 +92,7 @@ impl Game {
                     let mailbox = &self.mailboxes[index];
                     if mailbox.color == item.color {
                         raw_score_added += self.config.deliver_score;
+                        self.assets.sfx.score.play_random_pitch();
                         self.mailboxes.remove(index);
                     }
                 } else if self.lives != 0 {
