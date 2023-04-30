@@ -22,8 +22,10 @@ item_throw_max_w = 20
 item_throw_scale = 0.3
 throw_height = 0.5
 colors = ["white"]
-time_scale = 0.5
-start_time = 120
-lives = 3
 juggling_score_multiplier = 100
 deliver_score = 1000
+
+# TODO config screen
+start_time = 120
+time_scale = 0.5
+lives = 3
