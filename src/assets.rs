@@ -30,8 +30,17 @@ impl geng::asset::Load for Texture {
 }
 
 #[derive(geng::asset::Load)]
+pub struct Sfx {
+    #[load(ext = "mp3")]
+    pub juggle: geng::Sound,
+    #[load(ext = "mp3")]
+    pub pick: geng::Sound,
+}
+
+#[derive(geng::asset::Load)]
 pub struct Assets {
     pub shaders: Shaders,
+    pub sfx: Sfx,
     pub envelope: Rc<Texture>,
     pub bag: Texture,
     pub hand: Texture,

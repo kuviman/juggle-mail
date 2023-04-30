@@ -7,11 +7,13 @@ mod controls;
 mod draw;
 mod draw3d;
 mod update;
+mod util;
 
 use assets::*;
 use camera::*;
 use config::*;
 use draw3d::Draw3d;
+use util::*;
 
 type Id = usize;
 

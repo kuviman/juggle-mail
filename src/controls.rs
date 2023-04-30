@@ -25,12 +25,14 @@ impl Game {
             .min_by_key(|(_index, item)| r32((item.pos - cursor_world).len()))
             .map(|(index, _item)| index)
         {
+            self.assets.sfx.pick.play_random_pitch();
             self.holding = Some(self.juggling_items.remove(index));
         } else if self
             .bag_position
             .extend_uniform(self.config.hand_radius)
             .contains(cursor_world)
         {
+            self.assets.sfx.pick.play_random_pitch();
             self.holding = Some(Item::new(
                 &self.assets.envelope,
                 self.config.item_scale,
@@ -72,6 +74,7 @@ impl Game {
                     / self.config.throw_target_height;
                 item.w = thread_rng().gen_range(-1.0..1.0) * self.config.item_max_w;
                 self.juggling_items.push(item);
+                self.assets.sfx.juggle.play_random_pitch();
             }
         }
     }
