@@ -78,6 +78,13 @@ struct Game {
     transition: Option<geng::state::Transition>,
     lives: usize,
     cursor: vec2<f32>,
+    music: geng::SoundEffect,
+}
+
+impl Drop for Game {
+    fn drop(&mut self) {
+        self.music.stop();
+    }
 }
 
 impl Game {
@@ -113,7 +120,10 @@ impl Game {
             config.camera_rot.to_radians(),
             config.earth_radius + config.camera_height,
         );
+        let mut music = assets.music.play();
+        music.set_volume(0.4);
         Self {
+            music,
             lives: config.lives,
             score: 0.0,
             time_left: config.start_time,

@@ -26,6 +26,6 @@ juggling_score_multiplier = 100
 deliver_score = 1000
 
 # TODO config screen
-start_time = 120
+start_time = 30
 time_scale = 0.5
 lives = 3

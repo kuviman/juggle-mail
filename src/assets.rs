@@ -56,6 +56,12 @@ pub struct Assets {
     pub mailbox: Texture,
     #[load(postprocess = "make_repeated")]
     pub road: Texture,
+    #[load(ext = "mp3", postprocess = "make_looped")]
+    pub music: geng::Sound,
+}
+
+fn make_looped(sound: &mut geng::Sound) {
+    sound.set_looped(true);
 }
 
 fn make_repeated(texture: &mut Texture) {
