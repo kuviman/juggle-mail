@@ -33,7 +33,7 @@ mailbox_colors = [
 ]
 juggling_score_multiplier = 100
 deliver_score = 1000
-spawn_distance = 0
+spawn_distance = 50
 despawn_distance = 10
 hand_rotation = 20
 throw_animation_time = 0.2
@@ -48,7 +48,10 @@ particle_lifetime = 0.5
 explosion_color = "#f70"
 score_color = "#07f"
 sun_size = 0.5
-sun_offset = 2
+sun_offset = 1
+house_offset = 2
+distance_between_houses = 10
+house_size = 2
 
 # TODO config screen
 start_time = 30

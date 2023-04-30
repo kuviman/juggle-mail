@@ -80,6 +80,20 @@ impl Game {
             );
         }
 
+        for house in &self.houses {
+            self.draw3d.draw_sprite(
+                framebuffer,
+                &self.camera,
+                &self.assets.houses[house.texture],
+                {
+                    let circle_pos = vec2(self.config.earth_radius, 0.0).rotate(house.latitude);
+                    vec3(house.x, circle_pos.x, -circle_pos.y)
+                },
+                vec2::splat(self.config.house_size) * vec2(-house.x.signum(), 1.0),
+                Rgba::WHITE,
+            );
+        }
+
         self.geng.draw2d().draw2d(
             framebuffer,
             self.camera.as_2d(),

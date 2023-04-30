@@ -66,6 +66,8 @@ pub struct Assets {
     pub music: geng::Sound,
     pub particle: Texture,
     pub sun: Texture,
+    #[load(listed_in = "_list.ron")]
+    pub houses: Vec<Texture>,
 }
 
 fn make_looped(sound: &mut geng::Sound) {

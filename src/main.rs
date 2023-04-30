@@ -67,6 +67,12 @@ struct Mailbox {
     pub color: usize,
 }
 
+struct House {
+    pub x: f32,
+    pub latitude: f32,
+    pub texture: usize,
+}
+
 struct Game {
     real_time: f32,
     score: f32,
@@ -82,6 +88,7 @@ struct Game {
     bag_position: Aabb2<f32>,
     holding: Option<Item>,
     mailboxes: Vec<Mailbox>,
+    houses: Vec<House>,
     draw3d: Draw3d,
     my_latitude: f32,
     road_mesh: ugli::VertexBuffer<draw3d::Vertex>,
@@ -137,6 +144,7 @@ impl Game {
         let mut music = assets.music.play();
         music.set_volume(0.4);
         Self {
+            houses: vec![],
             real_time: 0.0,
             error_animation_time: 1.0,
             throw_animation_time: 0.0,

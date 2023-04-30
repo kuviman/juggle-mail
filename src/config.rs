@@ -47,4 +47,7 @@ pub struct Config {
     pub score_color: Rgba<f32>,
     pub sun_size: f32,
     pub sun_offset: f32,
+    pub house_offset: f32,
+    pub distance_between_houses: f32,
+    pub house_size: f32,
 }

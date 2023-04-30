@@ -31,6 +31,7 @@ impl Game {
         self.update_juggling_items(delta_time);
         self.my_latitude += self.config.ride_speed * delta_time; // Move forward
         self.update_mailboxes();
+        self.update_houses();
         self.update_thrown_items(delta_time);
     }
 
@@ -62,6 +63,27 @@ impl Game {
         }
         for _ in 0..lives_lost {
             self.lose_life();
+        }
+    }
+
+    fn update_houses(&mut self) {
+        self.houses.retain(|house| {
+            house.latitude > self.my_latitude - self.config.despawn_distance.to_radians()
+        });
+        while self.houses.last().map_or(true, |house| {
+            house.latitude < self.my_latitude + self.config.spawn_distance.to_radians()
+        }) {
+            let last_latitude = self
+                .houses
+                .last()
+                .map_or(self.my_latitude, |house| house.latitude);
+            for x in [-1, 1] {
+                self.houses.push(House {
+                    x: x as f32 * (self.config.road_width + self.config.house_offset),
+                    latitude: last_latitude + self.config.distance_between_houses.to_radians(),
+                    texture: thread_rng().gen_range(0..self.assets.houses.len()),
+                });
+            }
         }
     }
 
