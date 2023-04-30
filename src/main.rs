@@ -6,6 +6,7 @@ mod config;
 mod controls;
 mod draw;
 mod draw3d;
+mod font;
 mod particle;
 mod update;
 mod util;
@@ -14,6 +15,7 @@ use assets::*;
 use camera::*;
 use config::*;
 use draw3d::Draw3d;
+use font::*;
 use particle::*;
 use util::*;
 

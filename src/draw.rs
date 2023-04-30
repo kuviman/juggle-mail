@@ -206,26 +206,109 @@ impl Game {
 
         self.draw_particles(framebuffer);
 
-        self.geng.default_font().draw(
+        for i in 0..self.config.lives {
+            const W: f32 = 2.0;
+            let pos = vec2(
+                -W / 2.0 + W * i as f32 / (self.config.lives.max(2) - 1) as f32,
+                4.5,
+            );
+            self.geng.draw2d().draw2d(
+                framebuffer,
+                self.camera.as_2d(),
+                &draw2d::TexturedQuad::new(
+                    Aabb2::point(pos).extend_uniform(0.4),
+                    if i < self.lives {
+                        &self.assets.heart
+                    } else {
+                        &self.assets.cross
+                    },
+                ),
+            );
+        }
+
+        let top_right = self
+            .camera
+            .as_2d()
+            .screen_to_world(self.framebuffer_size, self.framebuffer_size);
+        self.geng.draw2d().draw2d(
             framebuffer,
             self.camera.as_2d(),
-            &format!(
-                "score: {}\ntime left: {:.3} secs",
-                self.score.floor() as i32,
-                self.time_left
-            ),
-            vec2::splat(geng::TextAlign::CENTER),
-            mat3::translate(vec2(0.0, 4.0)) * mat3::scale_uniform(0.5),
-            Rgba::BLACK,
+            &draw2d::TexturedQuad::unit(&self.assets.timer).translate(top_right - vec2(1.5, 1.5)),
+        );
+        self.geng.draw2d().draw2d(
+            framebuffer,
+            self.camera.as_2d(),
+            &draw2d::TexturedQuad::unit(&self.assets.timer_arrow)
+                .rotate(-2.0 * f32::PI * progress)
+                .translate(top_right - vec2(1.5, 1.5)),
         );
 
-        self.geng.default_font().draw(
+        let top_left = self
+            .camera
+            .as_2d()
+            .screen_to_world(self.framebuffer_size, vec2(0.0, self.framebuffer_size.y));
+        let score_text = (self.score.floor() as i32).to_string();
+        self.geng.draw2d().draw_textured(
             framebuffer,
             self.camera.as_2d(),
-            &format!("lives {}", self.lives),
-            vec2::splat(geng::TextAlign::CENTER),
-            mat3::translate(vec2(0.0, 4.5)) * mat3::scale_uniform(0.5),
-            Rgba::BLACK,
+            &{
+                let pad = 0.1;
+                let w = score_text.len() as f32 + 1.0;
+                [
+                    draw2d::TexturedVertex {
+                        a_pos: top_left + vec2(0.0, -1.5 - pad),
+                        a_color: Rgba::WHITE,
+                        a_vt: vec2(1.0 - w - 0.5, 0.0),
+                    },
+                    draw2d::TexturedVertex {
+                        a_pos: top_left + vec2(0.0, -0.5 + pad),
+                        a_color: Rgba::WHITE,
+                        a_vt: vec2(1.0 - w - 0.5, 1.0),
+                    },
+                    draw2d::TexturedVertex {
+                        a_pos: top_left + vec2(0.5 + w, -0.5 + pad),
+                        a_color: Rgba::WHITE,
+                        a_vt: vec2(1.0, 1.0),
+                    },
+                    draw2d::TexturedVertex {
+                        a_pos: top_left + vec2(0.5 + w, -1.5 - pad),
+                        a_color: Rgba::WHITE,
+                        a_vt: vec2(1.0, 0.0),
+                    },
+                ]
+            },
+            &self.assets.score_background,
+            self.config.score_color,
+            ugli::DrawMode::TriangleFan,
         );
+        self.assets.font.draw(
+            framebuffer,
+            self.camera.as_2d(),
+            &score_text,
+            Rgba::BLACK,
+            mat3::translate(top_left + vec2(0.5, -1.5)),
+        );
+
+        // self.geng.default_font().draw(
+        //     framebuffer,
+        //     self.camera.as_2d(),
+        //     &format!(
+        //         "score: {}\ntime left: {:.3} secs",
+        //         self.score.floor() as i32,
+        //         self.time_left
+        //     ),
+        //     vec2::splat(geng::TextAlign::CENTER),
+        //     mat3::translate(vec2(0.0, 4.0)) * mat3::scale_uniform(0.5),
+        //     Rgba::BLACK,
+        // );
+
+        // self.geng.default_font().draw(
+        //     framebuffer,
+        //     self.camera.as_2d(),
+        //     &format!("lives {}", self.lives),
+        //     vec2::splat(geng::TextAlign::CENTER),
+        //     mat3::translate(vec2(0.0, 4.5)) * mat3::scale_uniform(0.5),
+        //     Rgba::BLACK,
+        // );
     }
 }
