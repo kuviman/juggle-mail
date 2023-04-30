@@ -55,6 +55,7 @@ pub struct Assets {
     pub envelope: Rc<Texture>,
     pub envelope_highlight: Texture,
     pub bag: Texture,
+    pub bike: Texture,
     pub hand: Texture,
     pub holding_hand: Texture,
     pub mailbox: Texture,

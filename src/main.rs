@@ -37,7 +37,6 @@ impl Item {
             w: 0.0,
             half_size: vec2(texture.size().map(|x| x as f32).aspect(), 1.0) * scale,
             color: {
-                let c = thread_rng().gen_range(0.8..1.0);
                 Rgba::new(
                     thread_rng().gen_range(0.9..1.0),
                     thread_rng().gen_range(0.9..1.0),
