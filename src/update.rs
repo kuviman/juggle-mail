@@ -44,10 +44,11 @@ impl Game {
     }
 
     fn update_mailboxes(&mut self) {
-        self.mailboxes
-            .retain(|mailbox| mailbox.latitude > self.my_latitude - f32::PI);
+        self.mailboxes.retain(|mailbox| {
+            mailbox.latitude > self.my_latitude - self.config.despawn_distance.to_radians()
+        });
         while self.mailboxes.last().map_or(true, |mailbox| {
-            mailbox.latitude < self.my_latitude + f32::PI
+            mailbox.latitude < self.my_latitude + self.config.spawn_distance.to_radians()
         }) {
             let last_latitude = self
                 .mailboxes
@@ -68,7 +69,7 @@ impl Game {
                     id: self.next_id,
                     x: x as f32 * (self.config.road_width + self.config.mailbox_size / 2.0),
                     latitude: last_latitude + self.config.distance_between_mailboxes.to_radians(),
-                    color: thread_rng().gen_range(0..self.config.colors.len()),
+                    color: thread_rng().gen_range(0..self.config.mailbox_colors.len()),
                 });
                 self.next_id += 1;
             }
@@ -91,12 +92,9 @@ impl Game {
                     .iter()
                     .position(|mailbox| mailbox.id == item.to_id);
                 if let Some(index) = index {
-                    let mailbox = &self.mailboxes[index];
-                    if mailbox.color == item.color {
-                        raw_score_added += self.config.deliver_score;
-                        self.assets.sfx.score.play_random_pitch();
-                        self.mailboxes.remove(index);
-                    }
+                    raw_score_added += self.config.deliver_score;
+                    self.assets.sfx.score.play_random_pitch();
+                    self.mailboxes.remove(index);
                 } else {
                     lives_lost += 1;
                 }

@@ -34,7 +34,7 @@ impl Game {
                     * mat4::scale(item.half_size.extend(1.0) * self.config.item_throw_scale)
                     * mat4::translate(vec3(-1.0, -1.0, 0.0))
                     * mat4::scale_uniform(2.0),
-                self.config.colors[item.color],
+                self.config.mailbox_colors[item.color],
             );
         }
 
@@ -44,8 +44,8 @@ impl Game {
                 &self.camera,
                 &self.assets.mailbox,
                 self.mailbox_pos(mailbox),
-                vec2::splat(self.config.mailbox_size),
-                self.config.colors[mailbox.color],
+                vec2::splat(self.config.mailbox_size) * vec2(-mailbox.x.signum(), 1.0),
+                self.config.mailbox_colors[mailbox.color],
             );
             if Some(index) == hovered_mailbox {
                 // TODO
@@ -61,20 +61,26 @@ impl Game {
             self.geng.draw2d().draw2d(
                 framebuffer,
                 self.camera.as_2d(),
-                &draw2d::TexturedQuad::unit_colored(&*item.texture, self.config.colors[item.color])
-                    .scale(item.half_size * self.config.item_hold_scale)
-                    .rotate(item.rot)
-                    .translate(cursor_world),
+                &draw2d::TexturedQuad::unit_colored(
+                    &*item.texture,
+                    self.config.mailbox_colors[item.color],
+                )
+                .scale(item.half_size * self.config.item_hold_scale)
+                .rotate(item.rot)
+                .translate(cursor_world),
             );
         }
         for item in &self.juggling_items {
             self.geng.draw2d().draw2d(
                 framebuffer,
                 self.camera.as_2d(),
-                &draw2d::TexturedQuad::unit_colored(&*item.texture, self.config.colors[item.color])
-                    .scale(item.half_size)
-                    .rotate(item.rot)
-                    .translate(item.pos),
+                &draw2d::TexturedQuad::unit_colored(
+                    &*item.texture,
+                    self.config.mailbox_colors[item.color],
+                )
+                .scale(item.half_size)
+                .rotate(item.rot)
+                .translate(item.pos),
             );
         }
 

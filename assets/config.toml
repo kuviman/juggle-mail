@@ -21,9 +21,20 @@ throw_time = 0.5
 item_throw_max_w = 20
 item_throw_scale = 0.3
 throw_height = 0.5
-colors = ["white"]
+mailbox_colors = [
+    "white",
+    "#fdd",
+    "#dfd",
+    "#ddf",
+    "#ffd",
+    "#fdf",
+    "#dff",
+    "#ddd",
+]
 juggling_score_multiplier = 100
 deliver_score = 1000
+spawn_distance = 0
+despawn_distance = 0
 
 # TODO config screen
 start_time = 30

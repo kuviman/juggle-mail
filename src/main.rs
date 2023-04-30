@@ -149,8 +149,8 @@ impl Game {
                         let uv_y =
                             (2.0 * f32::PI * config.earth_radius).ceil() * i as f32 / N as f32;
                         [-1, 1].map(|x| draw3d::Vertex {
-                            a_pos: vec3(x as f32 * config.road_width, yz.x, yz.y),
-                            a_uv: vec2(x as f32 * 0.5 + 0.5, uv_y),
+                            a_pos: vec3(x as f32 * 100.0, yz.x, yz.y),
+                            a_uv: vec2(x as f32 * 20.0 + 0.5, uv_y),
                         })
                     })
                     .collect()

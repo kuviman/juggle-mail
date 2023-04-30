@@ -54,7 +54,7 @@ pub struct Assets {
     pub hand: Texture,
     pub holding_hand: Texture,
     pub mailbox: Texture,
-    #[load(postprocess = "make_repeated")]
+    #[load(postprocess = "road_postprocess")]
     pub road: Texture,
     #[load(ext = "mp3", postprocess = "make_looped")]
     pub music: geng::Sound,
@@ -64,6 +64,6 @@ fn make_looped(sound: &mut geng::Sound) {
     sound.set_looped(true);
 }
 
-fn make_repeated(texture: &mut Texture) {
-    texture.set_wrap_mode(ugli::WrapMode::Repeat);
+fn road_postprocess(texture: &mut Texture) {
+    texture.set_wrap_mode_separate(ugli::WrapMode::Clamp, ugli::WrapMode::Repeat);
 }

@@ -36,7 +36,7 @@ impl Game {
             self.holding = Some(Item::new(
                 &self.assets.envelope,
                 self.config.item_scale,
-                thread_rng().gen_range(0..self.config.colors.len()),
+                thread_rng().gen_range(0..self.config.mailbox_colors.len()),
             ));
         }
     }
