@@ -44,4 +44,5 @@ pub struct Config {
     pub particle_size: f32,
     pub particle_lifetime: f32,
     pub explosion_color: Rgba<f32>,
+    pub score_color: Rgba<f32>,
 }

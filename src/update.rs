@@ -118,7 +118,7 @@ impl Game {
                     raw_score_added += self.config.deliver_score;
                     self.assets.sfx.score.play_random_pitch();
                     self.mailboxes.remove(index);
-                    spawn_particles = Some((item.to, Rgba::GREEN));
+                    spawn_particles = Some((item.to, self.config.score_color));
                 } else {
                     spawn_particles = Some((item.to, self.config.explosion_color));
                     lives_lost += 1;

@@ -46,6 +46,7 @@ particle_speed = 1
 particle_size = 0.3
 particle_lifetime = 0.5
 explosion_color = "#f70"
+score_color = "#07f"
 
 # TODO config screen
 start_time = 30
