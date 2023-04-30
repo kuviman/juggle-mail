@@ -23,13 +23,13 @@ item_throw_scale = 0.3
 throw_height = 0.5
 mailbox_colors = [
     "white",
-    "#f77",
-    "#7f7",
+    "#f55",
+    "#5f5",
     "#77f",
-    "#ff7",
-    "#f7f",
-    "#7ff",
-    "#777",
+    "#ff5",
+    "#f5f",
+    "#5ff",
+    "#555",
 ]
 juggling_score_multiplier = 100
 deliver_score = 1000
