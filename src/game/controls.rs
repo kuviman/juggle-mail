@@ -26,6 +26,9 @@ impl Game {
     }
 
     pub fn start_drag(&mut self) {
+        if self.end_timer != 0.0 {
+            return;
+        }
         let cursor_world = self
             .camera
             .as_2d()

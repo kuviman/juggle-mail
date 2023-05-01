@@ -12,6 +12,9 @@ impl Game {
             if self.end_timer == 0.0 && self.lives != 0 {
                 self.assets.sfx.timer.play();
             }
+            if self.end_timer == 0.0 {
+                self.end_drag();
+            }
             self.end_timer += delta_time / 3.0;
             if self.end_timer > 1.0 {
                 self.transition =
