@@ -53,8 +53,8 @@ house_offset = 2
 distance_between_houses = 10
 house_size = 2
 multiplier_color = "red"
+max_throw_distance = 7
 
-# TODO config screen
 game_time = [60, 30, 300]
 time_scale = [0.5, 1]
 lives = [3, 1]

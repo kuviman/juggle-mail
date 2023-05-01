@@ -117,7 +117,7 @@ impl Game {
             let pos = self.mailbox_pos(mailbox);
             // dot(ray.from + ray.dir * t - pos, camera_dir) = 0
             let t = vec3::dot(pos - ray.from, camera_dir) / vec3::dot(ray.dir, camera_dir);
-            if t < 0.0 {
+            if t < 0.0 || t * ray.dir.len() > self.config.max_throw_distance {
                 return false;
             }
             let p = ray.from + ray.dir * t;

@@ -48,6 +48,7 @@ pub struct Config {
     pub distance_between_houses: f32,
     pub house_size: f32,
     pub multiplier_color: Rgba<f32>,
+    pub max_throw_distance: f32,
 
     pub time_scale: Vec<f32>,
     pub game_time: Vec<f32>,
