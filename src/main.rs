@@ -21,11 +21,18 @@ use main_menu::MainMenu;
 use ui::WidgetExt;
 use util::*;
 
+#[derive(clap::Parser)]
+struct Args {
+    #[clap(flatten)]
+    geng: geng::CliArgs,
+}
+
 fn main() {
+    let args: Args = cli::parse();
     let geng = Geng::new_with(geng::ContextOptions {
         title: "Juggle Mail - by kuviman for LD53".to_owned(),
         target_ui_resolution: Some(vec2(800.0, 600.0)),
-        ..default()
+        ..geng::ContextOptions::from_args(&args.geng)
     });
     geng.clone().run_loading(async move {
         let assets: Rc<Assets> = geng
