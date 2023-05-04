@@ -189,7 +189,7 @@ impl Game {
             self.lives -= 1;
             self.assets.sfx.explosion.play_random_pitch();
             if self.lives == 0 {
-                self.assets.sfx.lose.play();
+                self.lose_sfx = Some(self.assets.sfx.lose.play());
                 self.music.stop();
             }
         }

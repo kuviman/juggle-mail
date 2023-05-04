@@ -94,11 +94,15 @@ pub struct Game {
     last_score_text: String,
     last_score_t: f32,
     end_timer: f32,
+    lose_sfx: Option<geng::SoundEffect>,
 }
 
 impl Drop for Game {
     fn drop(&mut self) {
         self.music.stop();
+        if let Some(mut sfx) = self.lose_sfx.take() {
+            sfx.stop();
+        }
     }
 }
 
@@ -138,6 +142,7 @@ impl Game {
         let mut music = assets.music.play();
         music.set_volume(0.4);
         Self {
+            lose_sfx: None,
             end_timer: 0.0,
             diff: diff.clone(),
             houses: vec![],
