@@ -63,6 +63,15 @@ struct House {
     pub texture: usize,
 }
 
+struct Touch {
+    id: Option<u64>,
+    position: vec2<f32>,
+    holding: Option<Item>,
+    error_animation_time: f32,
+    throw_animation_time: f32,
+    remove_time: Option<f32>,
+}
+
 pub struct Game {
     diff: Difficulty,
     real_time: f32,
@@ -77,7 +86,6 @@ pub struct Game {
     juggling_items: Vec<Item>,
     thrown_items: Vec<ThrownItem>,
     bag_position: Aabb2<f32>,
-    holding: Option<Item>,
     mailboxes: Vec<Mailbox>,
     houses: Vec<House>,
     draw3d: Draw3d,
@@ -85,10 +93,8 @@ pub struct Game {
     road_mesh: ugli::VertexBuffer<draw3d::Vertex>,
     transition: Option<geng::state::Transition>,
     lives: usize,
-    cursor: vec2<f32>,
+    touches: Vec<Touch>,
     music: geng::SoundEffect,
-    throw_animation_time: f32,
-    error_animation_time: f32,
     particles_ui: Vec<Particle>,
     particles_3d: Vec<Particle>,
     last_score_text: String,
@@ -111,9 +117,9 @@ impl Game {
         let circle_pos = vec2(self.config.earth_radius, 0.0).rotate(mailbox.latitude);
         vec3(mailbox.x, circle_pos.x, -circle_pos.y)
     }
-    fn hovered_mailbox(&self) -> Option<usize> {
+    fn hovered_mailbox(&self, cursor: vec2<f32>) -> Option<usize> {
         // self.hovered_mailbox();
-        let ray = self.camera.pixel_ray(self.framebuffer_size, self.cursor);
+        let ray = self.camera.pixel_ray(self.framebuffer_size, cursor);
         let camera_dir = self.camera.dir();
         let right = vec3(1.0, 0.0, 0.0);
         let up = vec3::cross(camera_dir, right).normalize_or_zero();
@@ -147,8 +153,6 @@ impl Game {
             diff: diff.clone(),
             houses: vec![],
             real_time: 0.0,
-            error_animation_time: 1.0,
-            throw_animation_time: 0.0,
             music,
             lives: diff.lives,
             score: 0.0,
@@ -162,7 +166,6 @@ impl Game {
             bag_position: Aabb2::point(vec2(0.0, -camera.fov() / 2.0 + 1.0)).extend_uniform(1.0),
             camera,
             juggling_items: vec![],
-            holding: None,
             mailboxes: vec![],
             draw3d: Draw3d::new(geng, assets),
             my_latitude: 0.0,
@@ -182,7 +185,7 @@ impl Game {
                     .collect()
             }),
             thrown_items: vec![],
-            cursor: vec2::ZERO,
+            touches: vec![],
             particles_3d: vec![],
             particles_ui: vec![],
             last_score_t: 1.0,
@@ -204,18 +207,16 @@ impl geng::State for Game {
     fn handle_event(&mut self, event: geng::Event) {
         match event {
             geng::Event::MouseDown { position, .. } => {
-                self.cursor = position.map(|x| x as f32);
-                self.start_drag();
+                self.touch_start(None, position.map(|x| x as f32));
             }
             geng::Event::MouseMove { position, .. } => {
-                self.cursor = position.map(|x| x as f32);
+                self.touch_move(None, position.map(|x| x as f32));
             }
             geng::Event::MouseUp {
                 position,
                 button: geng::MouseButton::Left,
             } => {
-                self.cursor = position.map(|x| x as f32);
-                self.end_drag();
+                self.touch_end(None, position.map(|x| x as f32));
             }
             geng::Event::KeyDown { key: geng::Key::R } => {
                 self.restart();
@@ -226,25 +227,19 @@ impl geng::State for Game {
                 self.transition = Some(geng::state::Transition::Pop);
             }
             geng::Event::KeyDown { .. } => {
-                self.start_drag();
+                self.touch_start(None, self.geng.window().cursor_position().map(|x| x as f32));
             }
             geng::Event::KeyUp { .. } => {
-                self.end_drag();
+                self.touch_end(None, self.geng.window().cursor_position().map(|x| x as f32));
             }
-            geng::Event::TouchStart { touches } => {
-                self.end_drag();
-                if let Some(touch) = touches.last() {
-                    self.cursor = touch.position.map(|x| x as f32);
-                    self.start_drag();
-                }
+            geng::Event::TouchStart(touch) => {
+                self.touch_start(Some(touch.id), touch.position.map(|x| x as f32));
             }
-            geng::Event::TouchMove { touches } => {
-                if let Some(touch) = touches.last() {
-                    self.cursor = touch.position.map(|x| x as f32);
-                }
+            geng::Event::TouchMove(touch) => {
+                self.touch_move(Some(touch.id), touch.position.map(|x| x as f32));
             }
-            geng::Event::TouchEnd { .. } => {
-                self.end_drag();
+            geng::Event::TouchEnd(touch) => {
+                self.touch_end(Some(touch.id), touch.position.map(|x| x as f32));
             }
             _ => {}
         }

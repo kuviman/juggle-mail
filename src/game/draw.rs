@@ -3,8 +3,6 @@ use super::*;
 impl Game {
     pub fn draw_impl(&mut self, framebuffer: &mut ugli::Framebuffer) {
         self.camera.latitude = self.my_latitude;
-        let hovered_item = self.hovered_item();
-        let hovered_mailbox = self.hovered_mailbox();
         let progress = 1.0 - self.time_left / self.diff.game_time;
 
         // Background
@@ -42,11 +40,6 @@ impl Game {
             ugli::DrawMode::TriangleStrip,
             &self.assets.road,
         );
-
-        let cursor_world = self
-            .camera
-            .as_2d()
-            .screen_to_world(self.framebuffer_size, self.cursor);
 
         for item in &self.thrown_items {
             let t = item.t / self.config.throw_time;
@@ -109,26 +102,6 @@ impl Game {
                 .rotate(self.real_time.sin() * 0.1)
                 .translate(vec2(self.bag_position.center().x, self.bag_position.min.y)),
         );
-        if self.bag_position.contains(cursor_world) {
-            self.geng.draw2d().draw2d(
-                framebuffer,
-                self.camera.as_2d(),
-                &draw2d::TexturedQuad::new(
-                    self.bag_position.extend_uniform(0.1),
-                    &self.assets.envelope_highlight,
-                ),
-            );
-        }
-        if let Some(item) = &self.holding {
-            self.geng.draw2d().draw2d(
-                framebuffer,
-                self.camera.as_2d(),
-                &draw2d::TexturedQuad::unit_colored(&*item.texture, item.color)
-                    .scale(item.half_size * self.config.item_hold_scale)
-                    .rotate(item.rot)
-                    .translate(cursor_world),
-            );
-        }
         for item in &self.juggling_items {
             self.geng.draw2d().draw2d(
                 framebuffer,
@@ -139,68 +112,95 @@ impl Game {
                     .translate(item.pos),
             );
         }
-        if let Some(index) = hovered_item {
-            let item = &self.juggling_items[index];
-            self.geng.draw2d().draw2d(
-                framebuffer,
-                self.camera.as_2d(),
-                &draw2d::TexturedQuad::unit(&self.assets.envelope_highlight)
-                    .scale(item.half_size * 1.1)
-                    .rotate(item.rot)
-                    .translate(item.pos),
-            );
-        }
-        self.geng.draw2d().draw2d(
-            framebuffer,
-            self.camera.as_2d(),
-            &draw2d::TexturedQuad::unit_colored(
-                if self.holding.is_some() {
-                    &self.assets.holding_hand
-                } else {
-                    &self.assets.hand
-                },
-                if self.error_animation_time < 1.0 {
-                    Rgba::RED
-                } else {
-                    Rgba::WHITE
-                },
-            )
-            .translate(vec2(
-                (1.0 - (self.error_animation_time * 2.0 - 1.0).sqr())
-                    * self.config.error_animation_distance
-                    * (self.real_time * self.config.error_animation_freq).sin(),
-                0.0,
-            ))
-            .rotate(
-                (1.0 - self.cursor.x / self.framebuffer_size.x * 2.0)
-                    * self.config.hand_rotation.to_radians(),
-            )
-            .scale_uniform(self.config.hand_radius)
-            .translate(
-                cursor_world
-                    + (vec2(0.0, self.config.throw_target_height) - cursor_world)
-                        * (1.0 - (self.throw_animation_time * 2.0 - 1.0).sqr())
-                        * self.config.throw_hand_distance,
-            ),
-        );
-
-        if let Some(index) = hovered_mailbox {
-            let mailbox = &self.mailboxes[index];
-            let camera_up = vec3::cross(self.camera.dir(), vec3(1.0, 0.0, 0.0)).normalize_or_zero();
-            let pos = self.mailbox_pos(mailbox) + camera_up * self.config.mailbox_size * 0.75;
-            if let Some(pos) = self.camera.world_to_screen(self.framebuffer_size, pos) {
-                let pos = self
-                    .camera
-                    .as_2d()
-                    .screen_to_world(self.framebuffer_size, pos);
+        for touch in &self.touches {
+            let cursor_world = self
+                .camera
+                .as_2d()
+                .screen_to_world(self.framebuffer_size, touch.position.map(|x| x as f32));
+            if self.bag_position.contains(cursor_world) {
                 self.geng.draw2d().draw2d(
                     framebuffer,
                     self.camera.as_2d(),
-                    &draw2d::TexturedQuad::unit(&self.assets.aim)
-                        .scale_uniform(1.0)
-                        .rotate(self.real_time)
-                        .translate(pos),
+                    &draw2d::TexturedQuad::new(
+                        self.bag_position.extend_uniform(0.1),
+                        &self.assets.envelope_highlight,
+                    ),
                 );
+            }
+            if let Some(item) = &touch.holding {
+                self.geng.draw2d().draw2d(
+                    framebuffer,
+                    self.camera.as_2d(),
+                    &draw2d::TexturedQuad::unit_colored(&*item.texture, item.color)
+                        .scale(item.half_size * self.config.item_hold_scale)
+                        .rotate(item.rot)
+                        .translate(cursor_world),
+                );
+            }
+            if let Some(index) = self.hovered_item(touch.position) {
+                let item = &self.juggling_items[index];
+                self.geng.draw2d().draw2d(
+                    framebuffer,
+                    self.camera.as_2d(),
+                    &draw2d::TexturedQuad::unit(&self.assets.envelope_highlight)
+                        .scale(item.half_size * 1.1)
+                        .rotate(item.rot)
+                        .translate(item.pos),
+                );
+            }
+            self.geng.draw2d().draw2d(
+                framebuffer,
+                self.camera.as_2d(),
+                &draw2d::TexturedQuad::unit_colored(
+                    if touch.holding.is_some() {
+                        &self.assets.holding_hand
+                    } else {
+                        &self.assets.hand
+                    },
+                    if touch.error_animation_time < 1.0 {
+                        Rgba::RED
+                    } else {
+                        Rgba::WHITE
+                    },
+                )
+                .translate(vec2(
+                    (1.0 - (touch.error_animation_time * 2.0 - 1.0).sqr())
+                        * self.config.error_animation_distance
+                        * (self.real_time * self.config.error_animation_freq).sin(),
+                    0.0,
+                ))
+                .rotate(
+                    (1.0 - touch.position.x as f32 / self.framebuffer_size.x * 2.0)
+                        * self.config.hand_rotation.to_radians(),
+                )
+                .scale_uniform(self.config.hand_radius)
+                .translate(
+                    cursor_world
+                        + (vec2(0.0, self.config.throw_target_height) - cursor_world)
+                            * (1.0 - (touch.throw_animation_time * 2.0 - 1.0).sqr())
+                            * self.config.throw_hand_distance,
+                ),
+            );
+
+            if let Some(index) = self.hovered_mailbox(touch.position) {
+                let mailbox = &self.mailboxes[index];
+                let camera_up =
+                    vec3::cross(self.camera.dir(), vec3(1.0, 0.0, 0.0)).normalize_or_zero();
+                let pos = self.mailbox_pos(mailbox) + camera_up * self.config.mailbox_size * 0.75;
+                if let Some(pos) = self.camera.world_to_screen(self.framebuffer_size, pos) {
+                    let pos = self
+                        .camera
+                        .as_2d()
+                        .screen_to_world(self.framebuffer_size, pos);
+                    self.geng.draw2d().draw2d(
+                        framebuffer,
+                        self.camera.as_2d(),
+                        &draw2d::TexturedQuad::unit(&self.assets.aim)
+                            .scale_uniform(1.0)
+                            .rotate(self.real_time)
+                            .translate(pos),
+                    );
+                }
             }
         }
 
@@ -291,7 +291,14 @@ impl Game {
 
         let multiplier_text = format!(
             "x{}",
-            1 + self.juggling_items.len() + self.holding.is_some() as usize
+            // TODO this is copypasta 🍝
+            self.juggling_items.len()
+                + 1
+                + self
+                    .touches
+                    .iter()
+                    .filter(|touch| touch.holding.is_some())
+                    .count()
         );
         self.geng.draw2d().draw_textured(
             framebuffer,

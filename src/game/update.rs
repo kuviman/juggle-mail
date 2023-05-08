@@ -13,7 +13,9 @@ impl Game {
                 self.assets.sfx.timer.play();
             }
             if self.end_timer == 0.0 {
-                self.end_drag();
+                while let Some(touch) = self.touches.pop() {
+                    self.touch_end(touch.id, touch.position);
+                }
             }
             self.end_timer += delta_time / 3.0;
             if self.end_timer > 1.0 {
@@ -31,17 +33,31 @@ impl Game {
         self.add_raw_score(delta_time * self.config.juggling_score_multiplier);
         self.time_left -= delta_time;
 
-        self.throw_animation_time =
-            (self.throw_animation_time + delta_time / self.config.throw_animation_time).min(1.0);
-        if self.holding.is_some() {
-            self.throw_animation_time = 0.0;
+        for touch in &mut self.touches {
+            if let Some(remove_time) = &mut touch.remove_time {
+                *remove_time =
+                    (*remove_time + delta_time / self.config.throw_animation_time).min(1.0);
+            }
+            touch.throw_animation_time = (touch.throw_animation_time
+                + delta_time / self.config.throw_animation_time)
+                .min(1.0);
+            if touch.holding.is_some() {
+                touch.throw_animation_time = 0.0;
+            }
+            touch.error_animation_time = (touch.error_animation_time
+                + delta_time / self.config.error_animation_time)
+                .min(1.0);
+            if touch.holding.is_some() {
+                touch.error_animation_time = 1.0;
+            }
         }
-
-        self.error_animation_time =
-            (self.error_animation_time + delta_time / self.config.error_animation_time).min(1.0);
-        if self.holding.is_some() {
-            self.error_animation_time = 1.0;
-        }
+        self.touches.retain(|touch| {
+            touch.id == None
+                || match touch.remove_time {
+                    Some(time) => time < 1.0,
+                    None => true,
+                }
+        });
 
         self.update_particles(delta_time);
 
@@ -58,7 +74,13 @@ impl Game {
         if self.end_timer != 0.0 {
             return;
         }
-        let multiplier = self.juggling_items.len() + 1 + self.holding.is_some() as usize;
+        let multiplier = self.juggling_items.len()
+            + 1
+            + self
+                .touches
+                .iter()
+                .filter(|touch| touch.holding.is_some())
+                .count();
         let scored = raw_score * multiplier as f32;
         self.score += scored;
         if raw_score == self.config.deliver_score {

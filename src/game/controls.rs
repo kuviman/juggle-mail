@@ -1,11 +1,11 @@
 use super::*;
 
 impl Game {
-    pub fn hovered_item(&self) -> Option<usize> {
+    pub fn hovered_item(&self, cursor: vec2<f32>) -> Option<usize> {
         let cursor_world = self
             .camera
             .as_2d()
-            .screen_to_world(self.framebuffer_size, self.cursor);
+            .screen_to_world(self.framebuffer_size, cursor);
         self.juggling_items
             .iter()
             .enumerate()
@@ -25,42 +25,65 @@ impl Game {
             .map(|(index, _item)| index)
     }
 
-    pub fn start_drag(&mut self) {
+    pub fn touch_start(&mut self, id: Option<u64>, position: vec2<f32>) {
         if self.end_timer != 0.0 {
             return;
         }
+        self.touches.retain(|touch| touch.id != id);
+        let mut touch = Touch {
+            id,
+            position,
+            holding: None,
+            error_animation_time: 1.0,
+            throw_animation_time: 1.0,
+            remove_time: None,
+        };
         let cursor_world = self
             .camera
             .as_2d()
-            .screen_to_world(self.framebuffer_size, self.cursor);
-        if let Some(index) = self.hovered_item() {
+            .screen_to_world(self.framebuffer_size, touch.position.map(|x| x as f32));
+        if let Some(index) = self.hovered_item(touch.position) {
             self.assets.sfx.pick.play_random_pitch();
-            self.holding = Some(self.juggling_items.remove(index));
+            touch.holding = Some(self.juggling_items.remove(index));
         } else if self
             .bag_position
             .extend_uniform(self.config.hand_radius)
             .contains(cursor_world)
         {
             self.assets.sfx.pick.play_random_pitch();
-            self.holding = Some(Item::new(&self.assets.envelope, self.config.item_scale));
+            touch.holding = Some(Item::new(&self.assets.envelope, self.config.item_scale));
         } else {
-            self.error_animation_time = 0.0;
+            touch.error_animation_time = 0.0;
             self.assets.sfx.error.play_random_pitch();
+        }
+        self.touches.push(touch);
+    }
+
+    pub fn touch_move(&mut self, id: Option<u64>, position: vec2<f32>) {
+        if let Some(touch) = self.touches.iter_mut().find(|touch| touch.id == id) {
+            touch.position = position;
+        } else {
+            self.touch_start(id, position);
         }
     }
 
-    pub fn end_drag(&mut self) {
+    pub fn touch_end(&mut self, id: Option<u64>, position: vec2<f32>) {
+        let Some(touch_index) = self.touches.iter_mut().position(|touch| touch.id == id) else { return };
+        let mut touch = self.touches.remove(touch_index);
+        touch.position = position;
         let cursor_world = self
             .camera
             .as_2d()
-            .screen_to_world(self.framebuffer_size, self.cursor);
-        if let Some(mut item) = self.holding.take() {
-            self.throw_animation_time = 0.0;
-            if let Some(index) = self.hovered_mailbox() {
+            .screen_to_world(self.framebuffer_size, touch.position.map(|x| x as f32));
+        if let Some(mut item) = touch.holding.take() {
+            touch.throw_animation_time = 0.0;
+            if let Some(index) = self.hovered_mailbox(touch.position) {
                 let mailbox = &self.mailboxes[index];
                 item.w = self.config.item_throw_max_w * mailbox.x.signum();
                 // Shoutout to Foggy's mom
-                let mut pixel_ray = self.camera.pixel_ray(self.framebuffer_size, self.cursor);
+                let mut pixel_ray = self
+                    .camera
+                    .pixel_ray(self.framebuffer_size, touch.position.map(|x| x as f32));
                 let cam_dir = self.camera.dir();
                 pixel_ray.dir -= cam_dir * vec3::dot(cam_dir, pixel_ray.dir);
                 pixel_ray.dir += cam_dir;
@@ -87,5 +110,7 @@ impl Game {
                 self.assets.sfx.juggle.play_random_pitch();
             }
         }
+        touch.remove_time = Some(0.0);
+        self.touches.push(touch);
     }
 }
