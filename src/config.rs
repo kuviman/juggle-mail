@@ -55,7 +55,7 @@ pub struct Config {
     pub lives: Vec<usize>,
 }
 
-#[derive(Clone)]
+#[derive(PartialEq, Clone, Serialize)]
 pub struct Difficulty {
     pub time_scale: f32,
     pub game_time: f32,

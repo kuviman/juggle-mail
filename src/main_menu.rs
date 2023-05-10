@@ -9,6 +9,7 @@ pub struct MainMenu {
     game_time: usize,
     lives: usize,
     name: String,
+    changing_name: bool,
 
     transition: Option<geng::state::Transition>,
     name_aabb: Aabb2<f64>,
@@ -24,7 +25,8 @@ impl MainMenu {
             game_time: 0,
             lives: 0,
             transition: None,
-            name: "you".to_owned(),
+            changing_name: false,
+            name: preferences::load("name").unwrap_or("you".to_owned()),
             name_aabb: Aabb2::ZERO,
         }
     }
@@ -51,13 +53,9 @@ impl geng::State for MainMenu {
             geng::Event::Text(text) => {
                 self.name.push_str(&text);
             }
-            geng::Event::TouchStart(geng::Touch { position, .. })
-            | geng::Event::MouseDown { position, .. } => {
-                if self.name_aabb.contains(position) {
-                    self.geng.window().start_text_input();
-                } else {
-                    self.geng.window().stop_text_input();
-                }
+            geng::Event::TouchStart(geng::Touch { .. }) | geng::Event::MouseDown { .. } => {
+                self.geng.window().stop_text_input();
+                self.changing_name = false;
             }
             _ => {}
         }
@@ -100,14 +98,22 @@ impl geng::State for MainMenu {
                     game_time: self.config.game_time[self.game_time],
                     lives: self.config.lives[self.lives],
                 },
+                self.name.clone(),
             ))));
+            preferences::save("name", &self.name);
         }
         let name = ui::TextInput::new(
+            cx,
             &mut self.name_aabb,
             self.geng.clone(),
             &self.assets.font,
             self.name.clone(),
+            self.changing_name,
         );
+        if name.was_clicked() {
+            self.geng.window().start_text_input();
+            self.changing_name = true;
+        }
         stack![
             ui::TextureWidget::new(&self.assets.main_menu),
             game_time.place(300, 95),

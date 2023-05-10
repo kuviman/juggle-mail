@@ -7,6 +7,8 @@ mod draw3d;
 mod final_screen;
 mod font;
 mod game;
+mod leaderboard;
+mod leaderboard_screen;
 mod main_menu;
 mod ui;
 mod util;
@@ -28,6 +30,8 @@ struct Args {
 }
 
 fn main() {
+    logger::init();
+    geng::setup_panic_handler();
     let args: Args = cli::parse();
     let geng = Geng::new_with(geng::ContextOptions {
         title: "Juggle Mail - by kuviman for LD53".to_owned(),

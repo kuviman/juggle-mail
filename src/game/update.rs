@@ -19,14 +19,27 @@ impl Game {
             }
             self.end_timer += delta_time / 3.0;
             if self.end_timer > 1.0 {
-                self.transition =
-                    Some(geng::state::Transition::Switch(Box::new(FinalScreen::new(
+                self.transition = Some(geng::state::Transition::Switch(Box::new(
+                    geng::LoadingScreen::new(
                         &self.geng,
-                        &self.assets,
-                        &self.config,
-                        self.diff.clone(),
-                        self.score,
-                    ))));
+                        geng::EmptyLoadingScreen::new(&self.geng),
+                        {
+                            let geng = self.geng.clone();
+                            let assets = self.assets.clone();
+                            let config = self.config.clone();
+                            let diff = self.diff.clone();
+                            let score = self.score;
+                            let name = self.name.clone();
+                            async move {
+                                let (global_pos, scores) =
+                                    leaderboard::submit(diff.clone(), &name, score).await;
+                                FinalScreen::new(
+                                    &geng, &assets, &config, diff, score, name, global_pos, scores,
+                                )
+                            }
+                        },
+                    ),
+                )));
             }
         }
 

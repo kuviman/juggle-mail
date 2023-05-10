@@ -73,6 +73,7 @@ struct Touch {
 }
 
 pub struct Game {
+    name: String,
     diff: Difficulty,
     real_time: f32,
     score: f32,
@@ -138,7 +139,13 @@ impl Game {
                 && p.y < self.config.mailbox_size
         })
     }
-    pub fn new(geng: &Geng, assets: &Rc<Assets>, config: &Rc<Config>, diff: Difficulty) -> Self {
+    pub fn new(
+        geng: &Geng,
+        assets: &Rc<Assets>,
+        config: &Rc<Config>,
+        diff: Difficulty,
+        name: String,
+    ) -> Self {
         let camera = Camera::new(
             config.fov.to_radians(),
             config.ui_fov,
@@ -148,6 +155,7 @@ impl Game {
         let mut music = assets.music.play();
         music.set_volume(0.4);
         Self {
+            name,
             lose_sfx: None,
             end_timer: 0.0,
             diff: diff.clone(),
@@ -199,6 +207,7 @@ impl Game {
             &self.assets,
             &self.config,
             self.diff.clone(),
+            self.name.clone(),
         ))));
     }
 }

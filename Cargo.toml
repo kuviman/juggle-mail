@@ -10,4 +10,5 @@ dynamic = ["dep:dynamic-deps"]
 [dependencies]
 dynamic-deps = { path = "dynamic-deps", optional = true }
 geng.git = "https://github.com/geng-engine/geng"
+jornet.git = "https://github.com/kuviman/jornet"
 serde = "1"

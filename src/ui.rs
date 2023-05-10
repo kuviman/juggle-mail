@@ -147,11 +147,30 @@ impl<T: geng::ui::Widget> WidgetExt for T {}
 pub struct Text<'a> {
     font: &'a Font,
     text: String,
+    align: f32,
 }
 
 impl<'a> Text<'a> {
     pub fn new(font: &'a Font, text: String) -> Self {
-        Self { font, text }
+        Self {
+            font,
+            text,
+            align: 0.5,
+        }
+    }
+    pub fn left_align(font: &'a Font, text: String) -> Self {
+        Self {
+            font,
+            text,
+            align: 0.0,
+        }
+    }
+    pub fn right_align(font: &'a Font, text: String) -> Self {
+        Self {
+            font,
+            text,
+            align: 1.0,
+        }
     }
 }
 
@@ -170,30 +189,55 @@ impl geng::ui::Widget for Text<'_> {
             "#858585".try_into().unwrap(),
             mat3::translate(cx.position.top_left().map(|x| x as f32))
                 * mat3::scale_uniform(cx.position.height() as f32)
-                * mat3::translate(-vec2(self.text.len() as f32 / 2.0, 0.0)),
+                * mat3::translate(-vec2(self.text.len() as f32 * self.align, 0.0)),
         );
     }
 }
 
 pub struct TextInput<'a> {
+    cursor_anim_time: &'a mut f64,
+    sense: &'a mut geng::ui::Sense,
     geng: Geng,
     font: &'a Font,
     text: String,
     aabb: &'a mut Aabb2<f64>,
+    clicked: bool,
+    show_cursor: bool,
 }
 
 impl<'a> TextInput<'a> {
-    pub fn new(aabb: &'a mut Aabb2<f64>, geng: Geng, font: &'a Font, text: String) -> Self {
+    pub fn new(
+        cx: &'a geng::ui::Controller,
+        aabb: &'a mut Aabb2<f64>,
+        geng: Geng,
+        font: &'a Font,
+        text: String,
+        show_cursor: bool,
+    ) -> Self {
+        let sense: &mut geng::ui::Sense = cx.get_state();
         Self {
+            show_cursor,
+            cursor_anim_time: cx.get_state(),
             aabb,
             geng,
             font,
             text,
+            clicked: sense.take_clicked(),
+            sense,
         }
+    }
+    pub fn was_clicked(&self) -> bool {
+        self.clicked
     }
 }
 
 impl geng::ui::Widget for TextInput<'_> {
+    fn update(&mut self, delta_time: f64) {
+        *self.cursor_anim_time += delta_time;
+    }
+    fn sense(&mut self) -> Option<&mut geng::ui::Sense> {
+        Some(self.sense)
+    }
     fn calc_constraints(
         &mut self,
         _children: &geng::ui::ConstraintsContext,
@@ -201,19 +245,35 @@ impl geng::ui::Widget for TextInput<'_> {
         default()
     }
     fn draw(&mut self, cx: &mut geng::ui::DrawContext) {
+        let extra = 0.1;
+        let size = if self.sense.is_captured() {
+            1.0 - extra
+        } else if self.sense.is_hovered() {
+            1.0 + extra
+        } else {
+            1.0
+        };
         *self.aabb = cx.position;
-        self.geng.draw2d().draw2d(
-            cx.framebuffer,
-            &geng::PixelPerfectCamera,
-            &draw2d::Quad::new(cx.position.map(|x| x as f32), Rgba::RED),
-        );
+        // self.geng.draw2d().draw2d(
+        //     cx.framebuffer,
+        //     &geng::PixelPerfectCamera,
+        //     &draw2d::Quad::new(cx.position.map(|x| x as f32), Rgba::RED),
+        // );
         self.font.draw(
             cx.framebuffer,
             &geng::PixelPerfectCamera,
-            &self.text,
+            &format!(
+                "{}{}",
+                self.text,
+                if self.show_cursor && self.cursor_anim_time.fract() < 0.5 {
+                    "_"
+                } else {
+                    ""
+                }
+            ),
             "#858585".try_into().unwrap(),
             mat3::translate(vec2(cx.position.center().x, cx.position.min.y).map(|x| x as f32))
-                * mat3::scale_uniform(cx.position.height() as f32)
+                * mat3::scale_uniform(cx.position.height() as f32 * size)
                 * mat3::translate(-vec2(self.text.len() as f32 / 2.0, 0.0)),
         );
     }

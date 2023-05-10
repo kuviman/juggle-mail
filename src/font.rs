@@ -15,13 +15,15 @@ impl Font {
         mut transform: mat3<f32>,
     ) {
         for c in text.chars() {
-            self.draw2d.draw2d(
-                framebuffer,
-                camera,
-                &draw2d::TexturedQuad::unit_colored(&self.textures[&c], color).transform(
-                    transform * mat3::scale_uniform(0.5) * mat3::translate(vec2::splat(1.0)),
-                ),
-            );
+            if let Some(texture) = self.textures.get(&c) {
+                self.draw2d.draw2d(
+                    framebuffer,
+                    camera,
+                    &draw2d::TexturedQuad::unit_colored(texture, color).transform(
+                        transform * mat3::scale_uniform(0.5) * mat3::translate(vec2::splat(1.0)),
+                    ),
+                );
+            }
             transform *= mat3::translate(vec2(1.0, 0.0));
         }
     }
@@ -34,7 +36,14 @@ impl geng::asset::Load for Font {
         async move {
             let chars: String = file::load_string(path.join("chars.txt")).await?;
             let textures = future::try_join_all(chars.chars().map(|c| {
-                let texture = manager.load(path.join(format!("{c}.png")));
+                let file_name = match c {
+                    ':' => "colon".to_string(),
+                    '+' => "plus".to_string(),
+                    '#' => "hash".to_string(),
+                    '-' => "dash".to_string(),
+                    _ => c.to_string(),
+                };
+                let texture = manager.load(path.join(format!("{file_name}.png")));
                 async move { Ok::<_, anyhow::Error>((c, texture.await?)) }
             }))
             .await?

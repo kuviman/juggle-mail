@@ -8,10 +8,13 @@ pub struct FinalScreen {
     time_scale: usize,
     game_time: usize,
     lives: usize,
+    name: String,
+    global_place: usize,
 
     transition: Option<geng::state::Transition>,
 
     score: f32,
+    top10: Vec<jornet::Score>,
 }
 
 impl FinalScreen {
@@ -21,8 +24,14 @@ impl FinalScreen {
         config: &Rc<Config>,
         diff: Difficulty,
         score: f32,
+        name: String,
+        global_place: usize,
+        top10: Vec<jornet::Score>,
     ) -> Self {
         Self {
+            top10,
+            global_place,
+            name,
             score,
             geng: geng.clone(),
             assets: assets.clone(),
@@ -71,10 +80,23 @@ impl geng::State for FinalScreen {
                     game_time: self.config.game_time[self.game_time],
                     lives: self.config.lives[self.lives],
                 },
+                self.name.clone(),
             ))));
         }
         let score = ui::Text::new(&self.assets.font, (self.score.floor() as i32).to_string());
+        let global_place = ui::Text::new(&self.assets.font, (self.global_place + 1).to_string());
         let menu = ui::TextureButton::new(cx, &self.assets.menu, &self.assets.ui_sfx);
+        let leaderboard_button =
+            ui::TextureButton::new(cx, &self.assets.leaderboard_button, &self.assets.ui_sfx);
+        if leaderboard_button.was_clicked() {
+            self.transition = Some(geng::state::Transition::Push(Box::new(
+                crate::leaderboard_screen::LeaderboardScreen::new(
+                    &self.geng,
+                    &self.assets,
+                    self.top10.clone(),
+                ),
+            )));
+        }
         if menu.was_clicked() {
             self.transition = Some(geng::state::Transition::Pop);
         }
@@ -85,7 +107,9 @@ impl geng::State for FinalScreen {
             lives.place(300, 170),
             menu.place(25, 235),
             play.place(180, 220),
-            score.fixed_size(vec2(0.0, 16.0)).place(90, 180),
+            score.fixed_size(vec2(0.0, 16.0)).place(90, 163),
+            global_place.fixed_size(vec2(0.0, 16.0)).place(53, 208),
+            leaderboard_button.place(70, 190),
         ]
         .center()
         .boxed()

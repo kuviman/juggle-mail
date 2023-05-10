@@ -92,6 +92,7 @@ pub struct Assets {
     pub houses: Vec<Texture>,
     pub heart: Texture,
     pub cross: Texture,
+    pub back: Texture,
     pub timer: Texture,
     pub timer_arrow: Texture,
     pub font: Font,
@@ -101,6 +102,8 @@ pub struct Assets {
     pub play_button: Texture,
     pub play_again: Texture,
     pub menu: Texture,
+    pub leaderboard_button: Texture,
+    pub leaderboard_background: Texture,
 }
 
 fn make_looped(sound: &mut geng::Sound) {
