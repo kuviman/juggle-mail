@@ -8,8 +8,10 @@ pub struct MainMenu {
     time_scale: usize,
     game_time: usize,
     lives: usize,
+    name: String,
 
     transition: Option<geng::state::Transition>,
+    name_aabb: Aabb2<f64>,
 }
 
 impl MainMenu {
@@ -22,6 +24,8 @@ impl MainMenu {
             game_time: 0,
             lives: 0,
             transition: None,
+            name: "you".to_owned(),
+            name_aabb: Aabb2::ZERO,
         }
     }
 }
@@ -35,6 +39,28 @@ impl geng::State for MainMenu {
             .window()
             .set_cursor_type(geng::CursorType::Default);
         ugli::clear(framebuffer, Some(Rgba::BLACK), None, None);
+    }
+
+    fn handle_event(&mut self, event: geng::Event) {
+        match event {
+            geng::Event::KeyDown { key } => {
+                if key == geng::Key::Backspace {
+                    self.name.pop();
+                }
+            }
+            geng::Event::Text(text) => {
+                self.name.push_str(&text);
+            }
+            geng::Event::TouchStart(geng::Touch { position, .. })
+            | geng::Event::MouseDown { position, .. } => {
+                if self.name_aabb.contains(position) {
+                    self.geng.window().start_text_input();
+                } else {
+                    self.geng.window().stop_text_input();
+                }
+            }
+            _ => {}
+        }
     }
 
     fn ui<'a>(&'a mut self, cx: &'a geng::ui::Controller) -> Box<dyn geng::ui::Widget + 'a> {
@@ -76,12 +102,19 @@ impl geng::State for MainMenu {
                 },
             ))));
         }
+        let name = ui::TextInput::new(
+            &mut self.name_aabb,
+            self.geng.clone(),
+            &self.assets.font,
+            self.name.clone(),
+        );
         stack![
             ui::TextureWidget::new(&self.assets.main_menu),
             game_time.place(300, 95),
             time_scale.place(300, 133),
             lives.place(300, 170),
             play.place(180, 220),
+            name.fixed_size(vec2(160.0, 16.0)).place(20, 260),
         ]
         .center()
         .boxed()
