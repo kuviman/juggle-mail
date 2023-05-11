@@ -133,10 +133,24 @@ impl Game {
             }
             let p = ray.from + ray.dir * t;
 
-            let p = vec2(vec3::dot(p - pos, right), vec3::dot(p - pos, up));
-            p.x.abs() < self.config.mailbox_size / 2.0
-                && p.y > 0.0
-                && p.y < self.config.mailbox_size
+            // let p = vec2(vec3::dot(p - pos, right), vec3::dot(p - pos, up));
+            // Aabb2::ZERO
+            //     .extend_symmetric(vec2(self.config.mailbox_size / 2.0, 0.0))
+            //     .extend_up(self.config.mailbox_size)
+            //     .extend_uniform(self.config.hand_radius)
+            //     .contains(p)
+
+            let center = pos + up * self.config.mailbox_size / 2.0;
+            let Some(center) = self.camera.world_to_screen(self.framebuffer_size, center) else { return false };
+            let Some(pos) = self.camera.world_to_screen(self.framebuffer_size, pos) else { return false };
+            let size = (center - pos).len();
+
+            Aabb2::point(center)
+                .extend_uniform(size)
+                .extend_uniform(
+                    self.config.hand_radius / self.config.ui_fov * self.framebuffer_size.y,
+                )
+                .contains(cursor)
         })
     }
     pub fn new(
