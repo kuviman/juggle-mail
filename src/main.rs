@@ -36,7 +36,7 @@ fn main() {
     let args: Args = cli::parse();
     let geng = Geng::new_with(geng::ContextOptions {
         title: "Juggle Mail - by kuviman for LD53".to_owned(),
-        target_ui_resolution: Some(vec2(800.0, 600.0)),
+        target_ui_resolution: Some(vec2(8000.0, 600.0)),
         ..geng::ContextOptions::from_args(&args.geng)
     });
     geng.clone().run_loading(async move {
