@@ -91,6 +91,7 @@ impl geng::State for MainMenu {
         }
         let play = ui::TextureButton::new(cx, &self.assets.play_button, &self.assets.ui_sfx);
         if play.was_clicked() {
+            self.geng.window().stop_text_input();
             self.transition = Some(geng::state::Transition::Push(Box::new(Game::new(
                 &self.geng,
                 &self.assets,
