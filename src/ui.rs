@@ -1,6 +1,7 @@
 use super::*;
 
 pub struct TextureButton<'a> {
+    time: &'a mut f64,
     sense: &'a mut geng::ui::Sense,
     clicked: bool,
     texture: &'a ugli::Texture,
@@ -30,6 +31,7 @@ impl<'a> TextureButton<'a> {
             sfx.hover.play();
         }
         Self {
+            time: cx.get_state(),
             clicked,
             sense,
             texture,
@@ -43,6 +45,9 @@ impl<'a> TextureButton<'a> {
 }
 
 impl geng::ui::Widget for TextureButton<'_> {
+    fn update(&mut self, delta_time: f64) {
+        *self.time += delta_time;
+    }
     fn sense(&mut self) -> Option<&mut geng::ui::Sense> {
         Some(self.sense)
     }
@@ -71,6 +76,7 @@ impl geng::ui::Widget for TextureButton<'_> {
             })
             .scale_uniform(size)
             .scale(cx.position.size().map(|x| x as f32 / 2.0))
+            .rotate(self.time.sin() as f32 * 0.05)
             .translate(cx.position.center().map(|x| x as f32)),
         );
     }
@@ -213,8 +219,18 @@ impl<'a> TextInput<'a> {
         font: &'a Font,
         text: String,
         show_cursor: bool,
+        sfx: &'a UiSfx,
     ) -> Self {
         let sense: &mut geng::ui::Sense = cx.get_state();
+        let clicked = sense.take_clicked();
+        if clicked {
+            sfx.click.play();
+        }
+        let last_hover: &'a mut bool = cx.get_state();
+        if *last_hover != sense.is_hovered() {
+            *last_hover = sense.is_hovered();
+            sfx.hover.play();
+        }
         Self {
             show_cursor,
             cursor_anim_time: cx.get_state(),
@@ -222,7 +238,7 @@ impl<'a> TextInput<'a> {
             geng,
             font,
             text,
-            clicked: sense.take_clicked(),
+            clicked,
             sense,
         }
     }
@@ -274,6 +290,7 @@ impl geng::ui::Widget for TextInput<'_> {
             "#858585".try_into().unwrap(),
             mat3::translate(vec2(cx.position.center().x, cx.position.min.y).map(|x| x as f32))
                 * mat3::scale_uniform(cx.position.height() as f32 * size)
+                * mat3::rotate(self.cursor_anim_time.sin() as f32 * 0.05)
                 * mat3::translate(-vec2(self.text.len() as f32 / 2.0, 0.0)),
         );
     }

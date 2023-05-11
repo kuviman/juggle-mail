@@ -112,6 +112,7 @@ impl geng::State for MainMenu {
             &self.assets.font,
             self.name.clone(),
             self.changing_name,
+            &self.assets.ui_sfx,
         );
         if name.was_clicked() {
             self.geng.window().start_text_input();
