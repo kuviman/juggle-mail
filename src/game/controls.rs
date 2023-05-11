@@ -29,6 +29,13 @@ impl Game {
         if self.end_timer != 0.0 {
             return;
         }
+        if self
+            .touches
+            .iter()
+            .any(|touch| touch.id == id && touch.holding.is_some())
+        {
+            return;
+        }
         self.touches.retain(|touch| touch.id != id);
         let mut touch = Touch {
             id,
