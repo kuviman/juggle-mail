@@ -235,10 +235,7 @@ impl geng::State for Game {
             geng::Event::MouseMove { position, .. } => {
                 self.touch_move(None, position.map(|x| x as f32));
             }
-            geng::Event::MouseUp {
-                position,
-                button: geng::MouseButton::Left,
-            } => {
+            geng::Event::MouseUp { position, .. } => {
                 self.touch_end(None, position.map(|x| x as f32));
             }
             geng::Event::KeyDown { key: geng::Key::R } => {

@@ -63,7 +63,14 @@ impl Game {
         if let Some(touch) = self.touches.iter_mut().find(|touch| touch.id == id) {
             touch.position = position;
         } else {
-            self.touch_start(id, position);
+            self.touches.push(Touch {
+                id,
+                position,
+                holding: None,
+                error_animation_time: 1.0,
+                throw_animation_time: 1.0,
+                remove_time: None,
+            });
         }
     }
 
