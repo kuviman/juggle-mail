@@ -102,6 +102,7 @@ pub struct Game {
     last_score_t: f32,
     end_timer: f32,
     lose_sfx: Option<geng::SoundEffect>,
+    cursor_pos: vec2<f32>,
 }
 
 impl Drop for Game {
@@ -161,7 +162,6 @@ impl Game {
         diff: Difficulty,
         name: String,
     ) -> Self {
-        // geng.window().lock_cursor();
         let camera = Camera::new(
             config.fov.to_radians(),
             config.ui_fov,
@@ -171,6 +171,7 @@ impl Game {
         let mut music = assets.music.play();
         music.set_volume(0.4);
         Self {
+            cursor_pos: vec2::ZERO,
             name,
             lose_sfx: None,
             end_timer: 0.0,
@@ -232,13 +233,27 @@ impl geng::State for Game {
     fn handle_event(&mut self, event: geng::Event) {
         match event {
             geng::Event::MouseDown { position, .. } => {
-                self.touch_start(None, position.map(|x| x as f32));
+                if !self.geng.window().cursor_locked() {
+                    // self.geng.window().lock_cursor();
+                    self.cursor_pos = position.map(|x| x as f32);
+                }
+                self.touch_start(None, self.cursor_pos);
             }
-            geng::Event::MouseMove { position, .. } => {
-                self.touch_move(None, position.map(|x| x as f32));
+            geng::Event::MouseMove { position, delta } => {
+                if self.geng.window().cursor_locked() {
+                    self.cursor_pos += delta.map(|x| x as f32);
+                    self.cursor_pos.x = self.cursor_pos.x.clamp(0.0, self.framebuffer_size.x);
+                    self.cursor_pos.y = self.cursor_pos.y.clamp(0.0, self.framebuffer_size.y);
+                } else {
+                    self.cursor_pos = position.map(|x| x as f32);
+                }
+                self.touch_move(None, self.cursor_pos);
             }
             geng::Event::MouseUp { position, .. } => {
-                self.touch_end(None, position.map(|x| x as f32));
+                if !self.geng.window().cursor_locked() {
+                    self.cursor_pos = position.map(|x| x as f32);
+                }
+                self.touch_end(None, self.cursor_pos);
             }
             geng::Event::KeyDown { key: geng::Key::R } => {
                 self.restart();
