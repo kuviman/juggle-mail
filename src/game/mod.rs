@@ -106,6 +106,7 @@ pub struct Game {
 
 impl Drop for Game {
     fn drop(&mut self) {
+        self.geng.window().unlock_cursor();
         self.music.stop();
         if let Some(mut sfx) = self.lose_sfx.take() {
             sfx.stop();
@@ -160,6 +161,7 @@ impl Game {
         diff: Difficulty,
         name: String,
     ) -> Self {
+        // geng.window().lock_cursor();
         let camera = Camera::new(
             config.fov.to_radians(),
             config.ui_fov,

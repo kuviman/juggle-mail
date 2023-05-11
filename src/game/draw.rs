@@ -148,6 +148,31 @@ impl Game {
                         .translate(item.pos),
                 );
             }
+
+            self.geng.draw2d().draw2d(
+                framebuffer,
+                self.camera.as_2d(),
+                &draw2d::TexturedQuad::unit_colored(
+                    if touch.holding.is_some() {
+                        &self.assets.holding_hand
+                    } else {
+                        &self.assets.hand
+                    },
+                    Rgba::new(0.0, 0.0, 0.0, 0.1),
+                )
+                // .translate(vec2(
+                //     (1.0 - (touch.error_animation_time * 2.0 - 1.0).sqr())
+                //         * self.config.error_animation_distance
+                //         * (self.real_time * self.config.error_animation_freq).sin(),
+                //     0.0,
+                // ))
+                .rotate(
+                    (1.0 - touch.position.x as f32 / self.framebuffer_size.x * 2.0)
+                        * self.config.hand_rotation.to_radians(),
+                )
+                .scale_uniform(self.config.hand_radius)
+                .translate(cursor_world),
+            );
             self.geng.draw2d().draw2d(
                 framebuffer,
                 self.camera.as_2d(),
