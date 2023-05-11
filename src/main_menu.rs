@@ -45,18 +45,15 @@ impl geng::State for MainMenu {
 
     fn handle_event(&mut self, event: geng::Event) {
         match event {
-            geng::Event::KeyDown { key } => {
-                if key == geng::Key::Backspace {
-                    self.name.pop();
-                }
-            }
-            geng::Event::Text(text) => {
-                self.name.push_str(&text);
+            geng::Event::EditText(text) => {
+                self.name = text;
+                self.name = self.name.to_lowercase();
                 self.name.retain(|c| self.assets.font.can_render(c));
                 self.name = self.name.chars().take(10).collect();
+                self.geng.window().start_text_edit(&self.name);
             }
             geng::Event::TouchStart(geng::Touch { .. }) | geng::Event::MouseDown { .. } => {
-                self.geng.window().stop_text_input();
+                self.geng.window().stop_text_edit();
                 self.changing_name = false;
             }
             _ => {}
@@ -91,7 +88,7 @@ impl geng::State for MainMenu {
         }
         let play = ui::TextureButton::new(cx, &self.assets.play_button, &self.assets.ui_sfx);
         if play.was_clicked() {
-            self.geng.window().stop_text_input();
+            self.geng.window().stop_text_edit();
             self.transition = Some(geng::state::Transition::Push(Box::new(Game::new(
                 &self.geng,
                 &self.assets,
@@ -115,7 +112,7 @@ impl geng::State for MainMenu {
             &self.assets.ui_sfx,
         );
         if name.was_clicked() {
-            self.geng.window().start_text_input();
+            self.geng.window().start_text_edit(&self.name);
             self.changing_name = true;
         }
         stack![
