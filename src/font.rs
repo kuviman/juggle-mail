@@ -27,6 +27,9 @@ impl Font {
             transform *= mat3::translate(vec2(1.0, 0.0));
         }
     }
+    pub fn can_render(&self, c: char) -> bool {
+        self.textures.contains_key(&c)
+    }
 }
 
 impl geng::asset::Load for Font {

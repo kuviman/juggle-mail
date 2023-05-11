@@ -52,6 +52,7 @@ impl geng::State for MainMenu {
             }
             geng::Event::Text(text) => {
                 self.name.push_str(&text);
+                self.name.retain(|c| self.assets.font.can_render(c));
                 self.name = self.name.chars().take(10).collect();
             }
             geng::Event::TouchStart(geng::Touch { .. }) | geng::Event::MouseDown { .. } => {
