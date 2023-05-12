@@ -68,18 +68,40 @@ pub struct DifficultyAssets {
 }
 
 #[derive(geng::asset::Load)]
+pub struct SkinAssets {
+    pub hand: Texture,
+    pub holding_hand: Texture,
+    pub bike: Texture,
+    pub newspaper: Rc<Texture>,
+    pub bag: Texture,
+}
+
+async fn load_skins(
+    manager: &geng::asset::Manager,
+    path: impl AsRef<std::path::Path>,
+) -> anyhow::Result<HashMap<String, SkinAssets>> {
+    let path = path.as_ref();
+    let list: Vec<String> = file::load_detect(path.join("_list.ron")).await?;
+    Ok(
+        future::try_join_all(list.into_iter().map(|name| async move {
+            let skin: SkinAssets = manager.load(path.join(&name)).await?;
+            Ok::<_, anyhow::Error>((name, skin))
+        }))
+        .await?
+        .into_iter()
+        .collect(),
+    )
+}
+
+#[derive(geng::asset::Load)]
 pub struct Assets {
     pub difficulty: DifficultyAssets,
     pub ui_sfx: UiSfx,
     pub shaders: Shaders,
     pub sfx: Sfx,
-    #[load(path = "newspaper.png")]
-    pub envelope: Rc<Texture>,
     pub envelope_highlight: Texture,
-    pub bag: Texture,
-    pub bike: Texture,
-    pub hand: Texture,
-    pub holding_hand: Texture,
+    #[load(load_with = "load_skins(&manager, base_path.join(\"skins\"))")]
+    pub skins: HashMap<String, SkinAssets>,
     pub mailbox: Texture,
     pub aim: Texture,
     #[load(postprocess = "road_postprocess")]

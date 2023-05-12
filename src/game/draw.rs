@@ -5,6 +5,12 @@ impl Game {
         self.camera.latitude = self.my_latitude;
         let progress = 1.0 - self.time_left / self.diff.game_time;
 
+        let skin_assets = self
+            .assets
+            .skins
+            .get(&self.name)
+            .unwrap_or(&self.assets.skins["default"]);
+
         // Background
         ugli::clear(
             framebuffer,
@@ -90,12 +96,12 @@ impl Game {
         self.geng.draw2d().draw2d(
             framebuffer,
             self.camera.as_2d(),
-            &draw2d::TexturedQuad::new(self.bag_position, &self.assets.bag),
+            &draw2d::TexturedQuad::new(self.bag_position, &skin_assets.bag),
         );
         self.geng.draw2d().draw2d(
             framebuffer,
             self.camera.as_2d(),
-            &draw2d::TexturedQuad::unit(&self.assets.bike)
+            &draw2d::TexturedQuad::unit(&skin_assets.bike)
                 .translate(vec2(0.0, 1.0))
                 .scale_uniform(0.5)
                 .scale(self.bag_position.size() * vec2(2.0, 1.0))
@@ -154,9 +160,9 @@ impl Game {
                 self.camera.as_2d(),
                 &draw2d::TexturedQuad::unit_colored(
                     if touch.holding.is_some() {
-                        &self.assets.holding_hand
+                        &skin_assets.holding_hand
                     } else {
-                        &self.assets.hand
+                        &skin_assets.hand
                     },
                     Rgba::new(0.0, 0.0, 0.0, 0.1),
                 )
@@ -178,9 +184,9 @@ impl Game {
                 self.camera.as_2d(),
                 &draw2d::TexturedQuad::unit_colored(
                     if touch.holding.is_some() {
-                        &self.assets.holding_hand
+                        &skin_assets.holding_hand
                     } else {
-                        &self.assets.hand
+                        &skin_assets.hand
                     },
                     if touch.error_animation_time < 1.0 {
                         Rgba::RED

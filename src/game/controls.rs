@@ -58,7 +58,13 @@ impl Game {
             .contains(cursor_world)
         {
             self.assets.sfx.pick.play_random_pitch();
-            touch.holding = Some(Item::new(&self.assets.envelope, self.config.item_scale));
+
+            let skin_assets = self
+                .assets
+                .skins
+                .get(&self.name)
+                .unwrap_or(&self.assets.skins["default"]);
+            touch.holding = Some(Item::new(&skin_assets.newspaper, self.config.item_scale));
         } else {
             touch.error_animation_time = 0.0;
             self.assets.sfx.error.play_random_pitch();
