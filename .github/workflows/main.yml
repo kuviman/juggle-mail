@@ -1,0 +1,45 @@
+name: CI
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    container: kuviman/geng
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - run: cargo geng build --release --target wasm32-unknown-unknown
+      - name: Upload artifacts (web)
+        uses: actions/upload-artifact@v2
+        with:
+          name: web
+          path: target/geng
+      - run: cargo geng build --release
+      - name: Upload artifacts (linux)
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux
+          path: target/geng
+
+  deploy:
+    name: Deploy
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    environment:
+      name: main
+      url: https://badcop.itch.io/dreams
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+      - name: Upload itch.io (Web)
+        uses: josephbmanley/butler-publish-itchio-action@master
+        env:
+          BUTLER_CREDENTIALS: ${{ secrets.BUTLER_CREDENTIALS }}
+          CHANNEL: html5
+          ITCH_GAME: dreams
+          ITCH_USER: badcop
+          PACKAGE: web
