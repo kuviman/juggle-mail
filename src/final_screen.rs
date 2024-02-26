@@ -9,12 +9,12 @@ pub struct FinalScreen {
     game_time: usize,
     lives: usize,
     name: String,
-    global_place: usize,
+    global_place: Option<usize>,
 
     transition: Option<geng::state::Transition>,
 
     score: f32,
-    top10: Vec<jornet::Score>,
+    top10: Option<Vec<jornet::Score>>,
 }
 
 impl FinalScreen {
@@ -25,9 +25,12 @@ impl FinalScreen {
         diff: Difficulty,
         score: f32,
         name: String,
-        global_place: usize,
-        top10: Vec<jornet::Score>,
+        pos_and_scores: Option<(usize, Vec<jornet::Score>)>,
     ) -> Self {
+        let (global_place, top10) = match pos_and_scores {
+            Some((pos, scores)) => (Some(pos), Some(scores)),
+            None => (None, None),
+        };
         Self {
             top10,
             global_place,
@@ -84,23 +87,11 @@ impl geng::State for FinalScreen {
             ))));
         }
         let score = ui::Text::new(&self.assets.font, (self.score.floor() as i32).to_string());
-        let global_place = ui::Text::new(&self.assets.font, (self.global_place + 1).to_string());
         let menu = ui::TextureButton::new(cx, &self.assets.menu, &self.assets.ui_sfx);
-        let leaderboard_button =
-            ui::TextureButton::new(cx, &self.assets.leaderboard_button, &self.assets.ui_sfx);
-        if leaderboard_button.was_clicked() {
-            self.transition = Some(geng::state::Transition::Push(Box::new(
-                crate::leaderboard_screen::LeaderboardScreen::new(
-                    &self.geng,
-                    &self.assets,
-                    self.top10.clone(),
-                ),
-            )));
-        }
         if menu.was_clicked() {
             self.transition = Some(geng::state::Transition::Pop);
         }
-        stack![
+        let mut stack = stack![
             ui::TextureWidget::new(&self.assets.final_screen),
             game_time.place(300, 95),
             time_scale.place(300, 133),
@@ -108,10 +99,35 @@ impl geng::State for FinalScreen {
             menu.place(25, 235),
             play.place(180, 220),
             score.fixed_size(vec2(0.0, 16.0)).place(90, 163),
-            global_place.fixed_size(vec2(0.0, 16.0)).place(53, 208),
-            leaderboard_button.place(70, 190),
-        ]
-        .center()
-        .boxed()
+        ];
+
+        #[cfg(feature = "leaderboard")]
+        {
+            if let Some(global_place) = self.global_place {
+                let global_place = ui::Text::new(&self.assets.font, (global_place + 1).to_string());
+                stack.push(Box::new(
+                    global_place.fixed_size(vec2(0.0, 16.0)).place(53, 208),
+                ));
+            }
+            if let Some(top10) = &self.top10 {
+                let leaderboard_button = ui::TextureButton::new(
+                    cx,
+                    &self.assets.leaderboard_button,
+                    &self.assets.ui_sfx,
+                );
+                if leaderboard_button.was_clicked() {
+                    self.transition = Some(geng::state::Transition::Push(Box::new(
+                        crate::leaderboard_screen::LeaderboardScreen::new(
+                            &self.geng,
+                            &self.assets,
+                            top10.clone(),
+                        ),
+                    )));
+                }
+                stack.push(Box::new(leaderboard_button.place(70, 190)));
+            }
+        }
+
+        stack.center().boxed()
     }
 }

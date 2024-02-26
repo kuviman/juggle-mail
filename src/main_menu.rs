@@ -115,15 +115,18 @@ impl geng::State for MainMenu {
             self.geng.window().start_text_edit(&self.name);
             self.changing_name = true;
         }
-        stack![
+        let mut stack = stack![
             ui::TextureWidget::new(&self.assets.main_menu),
             game_time.place(300, 95),
             time_scale.place(300, 133),
             lives.place(300, 170),
             play.place(180, 220),
-            name.fixed_size(vec2(160.0, 16.0)).place(20, 260),
-        ]
-        .center()
-        .boxed()
+        ];
+
+        if cfg!(feature = "leaderboard") {
+            stack.push(Box::new(name.fixed_size(vec2(160.0, 16.0)).place(20, 260)));
+        }
+
+        stack.center().boxed()
     }
 }

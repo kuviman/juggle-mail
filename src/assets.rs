@@ -124,7 +124,9 @@ pub struct Assets {
     pub timer_arrow: Texture,
     pub font: Font,
     pub score_background: Texture,
+    #[cfg_attr(not(feature = "leaderboard"), load(path = "main_menu_no_lb.png"))]
     pub main_menu: Texture,
+    #[cfg_attr(not(feature = "leaderboard"), load(path = "final_screen_no_lb.png"))]
     pub final_screen: Texture,
     pub play_button: Texture,
     pub play_again: Texture,

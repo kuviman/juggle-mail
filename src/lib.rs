@@ -8,7 +8,9 @@ mod draw3d;
 mod final_screen;
 mod font;
 mod game;
+#[cfg(feature = "leaderboard")]
 mod leaderboard;
+#[cfg(feature = "leaderboard")]
 mod leaderboard_screen;
 mod main_menu;
 mod ui;

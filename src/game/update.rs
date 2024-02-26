@@ -31,10 +31,19 @@ impl Game {
                             let score = self.score;
                             let name = self.name.clone();
                             async move {
-                                let (global_pos, scores) =
-                                    leaderboard::submit(diff.clone(), &name, score).await;
+                                #[cfg(feature = "leaderboard")]
+                                let pos_and_scores =
+                                    Some(leaderboard::submit(diff.clone(), &name, score).await);
+                                #[cfg(not(feature = "leaderboard"))]
+                                let pos_and_scores = None;
                                 FinalScreen::new(
-                                    &geng, &assets, &config, diff, score, name, global_pos, scores,
+                                    &geng,
+                                    &assets,
+                                    &config,
+                                    diff,
+                                    score,
+                                    name,
+                                    pos_and_scores,
                                 )
                             }
                         },
