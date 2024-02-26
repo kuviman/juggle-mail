@@ -27,7 +27,7 @@ impl Game {
             self.camera.as_2d(),
             &draw2d::TexturedQuad::unit(&self.assets.sun)
                 .scale_uniform(self.config.sun_size)
-                .rotate(self.real_time.cos() * 0.2)
+                .rotate(Angle::from_radians(self.real_time.cos() * 0.2))
                 .translate({
                     let from = vec2(-self.config.sun_offset, self.camera.fov() / 2.0 * 0.4);
                     let to = vec2(
@@ -54,8 +54,8 @@ impl Game {
                 + (item.to - item.from) * t
                 + up * (1.0 - (1.0 - t * 2.0).sqr()) * self.config.throw_height;
             let matrix = mat4::translate(pos)
-                * mat4::rotate_x(-self.camera.latitude - self.camera.rot)
-                * mat4::rotate_z(item.rot)
+                * mat4::rotate_x(Angle::from_radians(-self.camera.latitude - self.camera.rot))
+                * mat4::rotate_z(Angle::from_radians(item.rot))
                 * mat4::scale(item.half_size.extend(1.0) * self.config.item_throw_scale)
                 * mat4::translate(vec3(-1.0, -1.0, 0.0))
                 * mat4::scale_uniform(2.0);
@@ -85,7 +85,8 @@ impl Game {
                 &self.camera,
                 &self.assets.houses[house.texture],
                 {
-                    let circle_pos = vec2(self.config.earth_radius, 0.0).rotate(house.latitude);
+                    let circle_pos = vec2(self.config.earth_radius, 0.0)
+                        .rotate(Angle::from_radians(house.latitude));
                     vec3(house.x, circle_pos.x, -circle_pos.y)
                 },
                 vec2::splat(self.config.house_size) * vec2(-house.x.signum(), 1.0),
@@ -105,7 +106,7 @@ impl Game {
                 .translate(vec2(0.0, 1.0))
                 .scale_uniform(0.5)
                 .scale(self.bag_position.size() * vec2(2.0, 1.0))
-                .rotate(self.real_time.sin() * 0.1)
+                .rotate(Angle::from_radians(self.real_time.sin() * 0.1))
                 .translate(vec2(self.bag_position.center().x, self.bag_position.min.y)),
         );
         for item in &self.juggling_items {
@@ -114,7 +115,7 @@ impl Game {
                 self.camera.as_2d(),
                 &draw2d::TexturedQuad::unit_colored(&*item.texture, item.color)
                     .scale(item.half_size)
-                    .rotate(item.rot)
+                    .rotate(Angle::from_radians(item.rot))
                     .translate(item.pos),
             );
         }
@@ -139,7 +140,7 @@ impl Game {
                     self.camera.as_2d(),
                     &draw2d::TexturedQuad::unit_colored(&*item.texture, item.color)
                         .scale(item.half_size * self.config.item_hold_scale)
-                        .rotate(item.rot)
+                        .rotate(Angle::from_radians(item.rot))
                         .translate(cursor_world),
                 );
             }
@@ -150,7 +151,7 @@ impl Game {
                     self.camera.as_2d(),
                     &draw2d::TexturedQuad::unit(&self.assets.envelope_highlight)
                         .scale(item.half_size * 1.1)
-                        .rotate(item.rot)
+                        .rotate(Angle::from_radians(item.rot))
                         .translate(item.pos),
                 );
             }
@@ -172,10 +173,10 @@ impl Game {
                 //         * (self.real_time * self.config.error_animation_freq).sin(),
                 //     0.0,
                 // ))
-                .rotate(
+                .rotate(Angle::from_radians(
                     (1.0 - touch.position.x as f32 / self.framebuffer_size.x * 2.0)
                         * self.config.hand_rotation.to_radians(),
-                )
+                ))
                 .scale_uniform(self.config.hand_radius)
                 .translate(cursor_world),
             );
@@ -200,10 +201,10 @@ impl Game {
                         * (self.real_time * self.config.error_animation_freq).sin(),
                     0.0,
                 ))
-                .rotate(
+                .rotate(Angle::from_radians(
                     (1.0 - touch.position.x as f32 / self.framebuffer_size.x * 2.0)
                         * self.config.hand_rotation.to_radians(),
-                )
+                ))
                 .scale_uniform(self.config.hand_radius)
                 .translate(
                     cursor_world
@@ -228,7 +229,7 @@ impl Game {
                         self.camera.as_2d(),
                         &draw2d::TexturedQuad::unit(&self.assets.aim)
                             .scale_uniform(1.0)
-                            .rotate(self.real_time)
+                            .rotate(Angle::from_radians(self.real_time))
                             .translate(pos),
                     );
                 }
@@ -270,7 +271,7 @@ impl Game {
             framebuffer,
             self.camera.as_2d(),
             &draw2d::TexturedQuad::unit(&self.assets.timer_arrow)
-                .rotate(-2.0 * f32::PI * progress)
+                .rotate(Angle::from_radians(-2.0 * f32::PI * progress))
                 .translate(top_right - vec2(1.5, 1.5)),
         );
 

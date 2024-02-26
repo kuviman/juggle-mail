@@ -13,7 +13,7 @@ impl Game {
                 Aabb2::ZERO.extend_uniform(1.0).contains(
                     (Quad::unit()
                         .scale(item.half_size.map(|x| x + self.config.hand_radius))
-                        .rotate(item.rot)
+                        .rotate(Angle::from_radians(item.rot))
                         .translate(item.pos)
                         .transform
                         .inverse()
@@ -88,7 +88,9 @@ impl Game {
     }
 
     pub fn touch_end(&mut self, id: Option<u64>, position: vec2<f32>) {
-        let Some(touch_index) = self.touches.iter_mut().position(|touch| touch.id == id) else { return };
+        let Some(touch_index) = self.touches.iter_mut().position(|touch| touch.id == id) else {
+            return;
+        };
         let mut touch = self.touches.remove(touch_index);
         touch.position = position;
         let cursor_world = self
@@ -120,9 +122,9 @@ impl Game {
             } else {
                 item.pos = cursor_world;
                 item.vel = (vec2(0.0, self.config.throw_target_height) - item.pos).rotate(
-                    thread_rng().gen_range(
+                    Angle::from_radians(thread_rng().gen_range(
                         -self.config.throw_angle.to_radians()..self.config.throw_angle.to_radians(),
-                    ),
+                    )),
                 ) * self.config.throw_speed
                     / self.config.throw_target_height;
                 item.w = thread_rng().gen_range(-1.0..1.0) * self.config.item_max_w;

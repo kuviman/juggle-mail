@@ -34,21 +34,27 @@ fn main() {
     logger::init();
     geng::setup_panic_handler();
     let args: Args = cli::parse();
-    let geng = Geng::new_with(geng::ContextOptions {
-        title: "Juggle Mail - by kuviman for LD53".to_owned(),
-        target_ui_resolution: Some(vec2(8000.0, 600.0)),
-        ..geng::ContextOptions::from_args(&args.geng)
-    });
-    geng.clone().run_loading(async move {
-        let assets: Rc<Assets> = geng
-            .asset_manager()
-            .load(run_dir().join("assets"))
-            .await
-            .unwrap();
-        let config: Config = file::load_detect(run_dir().join("assets").join("config.toml"))
-            .await
-            .unwrap();
-        let config = Rc::new(config);
-        MainMenu::new(&geng, &assets, &config)
-    })
+    Geng::run_with(
+        &{
+            let mut options = geng::ContextOptions {
+                window: geng::window::Options::new("Juggle Mail - by kuviman for LD53"),
+                target_ui_resolution: Some(vec2(8000.0, 600.0)),
+                ..default()
+            };
+            options.with_cli(&args.geng);
+            options
+        },
+        |geng| async move {
+            let assets: Rc<Assets> = geng
+                .asset_manager()
+                .load(run_dir().join("assets"))
+                .await
+                .unwrap();
+            let config: Config = file::load_detect(run_dir().join("assets").join("config.toml"))
+                .await
+                .unwrap();
+            let config = Rc::new(config);
+            geng.run_state(MainMenu::new(&geng, &assets, &config)).await;
+        },
+    );
 }

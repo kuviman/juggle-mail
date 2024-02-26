@@ -17,7 +17,7 @@ impl Camera {
             cam2d: geng::Camera2d {
                 fov: ui_fov,
                 center: vec2::ZERO,
-                rotation: 0.0,
+                rotation: Angle::ZERO,
             },
             latitude: 0.0,
             rot,
@@ -32,16 +32,16 @@ impl Camera {
     }
 
     pub fn dir(&self) -> vec3<f32> {
-        let v = vec2(0.0, 0.1).rotate(-self.latitude - self.rot);
+        let v = vec2(0.0, 0.1).rotate(Angle::from_radians(-self.latitude - self.rot));
         vec3(0.0, v.x, v.y)
     }
 }
 
 impl geng::AbstractCamera3d for Camera {
     fn view_matrix(&self) -> mat4<f32> {
-        mat4::rotate_x(self.rot)
+        mat4::rotate_x(Angle::from_radians(self.rot))
             * mat4::translate(vec3(0.0, -self.height, 0.0))
-            * mat4::rotate_x(self.latitude)
+            * mat4::rotate_x(Angle::from_radians(self.latitude))
     }
 
     fn projection_matrix(&self, framebuffer_size: vec2<f32>) -> mat4<f32> {

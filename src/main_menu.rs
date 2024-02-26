@@ -52,7 +52,7 @@ impl geng::State for MainMenu {
                 self.name = self.name.chars().take(10).collect();
                 self.geng.window().start_text_edit(&self.name);
             }
-            geng::Event::TouchStart(geng::Touch { .. }) | geng::Event::MouseDown { .. } => {
+            geng::Event::TouchStart(geng::Touch { .. }) | geng::Event::MousePress { .. } => {
                 self.geng.window().stop_text_edit();
                 self.changing_name = false;
             }

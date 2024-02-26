@@ -117,7 +117,8 @@ impl Drop for Game {
 
 impl Game {
     fn mailbox_pos(&self, mailbox: &Mailbox) -> vec3<f32> {
-        let circle_pos = vec2(self.config.earth_radius, 0.0).rotate(mailbox.latitude);
+        let circle_pos =
+            vec2(self.config.earth_radius, 0.0).rotate(Angle::from_radians(mailbox.latitude));
         vec3(mailbox.x, circle_pos.x, -circle_pos.y)
     }
     fn hovered_mailbox(&self, cursor: vec2<f32>) -> Option<usize> {
@@ -143,8 +144,12 @@ impl Game {
             //     .contains(p)
 
             let center = pos + up * self.config.mailbox_size / 2.0;
-            let Some(center) = self.camera.world_to_screen(self.framebuffer_size, center) else { return false };
-            let Some(pos) = self.camera.world_to_screen(self.framebuffer_size, pos) else { return false };
+            let Some(center) = self.camera.world_to_screen(self.framebuffer_size, center) else {
+                return false;
+            };
+            let Some(pos) = self.camera.world_to_screen(self.framebuffer_size, pos) else {
+                return false;
+            };
             let size = (center - pos).len();
 
             Aabb2::point(center)
@@ -199,7 +204,7 @@ impl Game {
                 (0..=N)
                     .flat_map(|i| {
                         let yz = vec2(config.earth_radius, 0.0)
-                            .rotate(2.0 * f32::PI * i as f32 / N as f32);
+                            .rotate(Angle::from_radians(2.0 * f32::PI * i as f32 / N as f32));
                         let uv_y =
                             (2.0 * f32::PI * config.earth_radius).ceil() * i as f32 / N as f32;
                         [-1, 1].map(|x| draw3d::Vertex {
@@ -232,42 +237,50 @@ impl Game {
 impl geng::State for Game {
     fn handle_event(&mut self, event: geng::Event) {
         match event {
-            geng::Event::MouseDown { position, .. } => {
-                if !self.geng.window().cursor_locked() {
-                    // self.geng.window().lock_cursor();
-                    self.cursor_pos = position.map(|x| x as f32);
+            geng::Event::MousePress { .. } => {
+                if let Some(position) = self.geng.window().cursor_position() {
+                    if !self.geng.window().cursor_locked() {
+                        // self.geng.window().lock_cursor();
+                        self.cursor_pos = position.map(|x| x as f32);
+                    }
+                    self.touch_start(None, self.cursor_pos);
                 }
-                self.touch_start(None, self.cursor_pos);
             }
-            geng::Event::MouseMove { position, delta } => {
-                if self.geng.window().cursor_locked() {
-                    self.cursor_pos += delta.map(|x| x as f32);
-                    self.cursor_pos.x = self.cursor_pos.x.clamp(0.0, self.framebuffer_size.x);
-                    self.cursor_pos.y = self.cursor_pos.y.clamp(0.0, self.framebuffer_size.y);
-                } else {
-                    self.cursor_pos = position.map(|x| x as f32);
-                }
+            geng::Event::RawMouseMove { delta } => {
+                self.cursor_pos += delta.map(|x| x as f32);
+                self.cursor_pos.x = self.cursor_pos.x.clamp(0.0, self.framebuffer_size.x);
+                self.cursor_pos.y = self.cursor_pos.y.clamp(0.0, self.framebuffer_size.y);
                 self.touch_move(None, self.cursor_pos);
             }
-            geng::Event::MouseUp { position, .. } => {
-                if !self.geng.window().cursor_locked() {
-                    self.cursor_pos = position.map(|x| x as f32);
-                }
-                self.touch_end(None, self.cursor_pos);
+            geng::Event::CursorMove { position } => {
+                self.cursor_pos = position.map(|x| x as f32);
+                self.touch_move(None, self.cursor_pos);
             }
-            geng::Event::KeyDown { key: geng::Key::R } => {
+            geng::Event::MouseRelease { .. } => {
+                if let Some(position) = self.geng.window().cursor_position() {
+                    if !self.geng.window().cursor_locked() {
+                        self.cursor_pos = position.map(|x| x as f32);
+                    }
+                    self.touch_end(None, self.cursor_pos);
+                }
+            }
+            geng::Event::KeyPress { key: geng::Key::R } => {
                 self.restart();
             }
-            geng::Event::KeyDown {
+            geng::Event::KeyPress {
                 key: geng::Key::Escape | geng::Key::Backspace | geng::Key::Enter,
             } => {
                 self.transition = Some(geng::state::Transition::Pop);
             }
-            geng::Event::KeyDown { .. } => {
-                self.touch_start(None, self.geng.window().cursor_position().map(|x| x as f32));
+            geng::Event::KeyPress { .. } => {
+                if let Some(cursor_position) = self.geng.window().cursor_position() {
+                    self.touch_start(None, cursor_position.map(|x| x as f32));
+                }
             }
-            geng::Event::KeyUp { .. } => {
-                self.touch_end(None, self.geng.window().cursor_position().map(|x| x as f32));
+            geng::Event::KeyRelease { .. } => {
+                if let Some(cursor_position) = self.geng.window().cursor_position() {
+                    self.touch_end(None, cursor_position.map(|x| x as f32));
+                }
             }
             geng::Event::TouchStart(touch) => {
                 self.touch_start(Some(touch.id), touch.position.map(|x| x as f32));

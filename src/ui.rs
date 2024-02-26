@@ -76,7 +76,7 @@ impl geng::ui::Widget for TextureButton<'_> {
             })
             .scale_uniform(size)
             .scale(cx.position.size().map(|x| x as f32 / 2.0))
-            .rotate(self.time.sin() as f32 * 0.05)
+            .rotate(Angle::from_radians(self.time.sin() as f32 * 0.05))
             .translate(cx.position.center().map(|x| x as f32)),
         );
     }
@@ -290,7 +290,9 @@ impl geng::ui::Widget for TextInput<'_> {
             "#858585".try_into().unwrap(),
             mat3::translate(vec2(cx.position.center().x, cx.position.min.y).map(|x| x as f32))
                 * mat3::scale_uniform(cx.position.height() as f32 * size)
-                * mat3::rotate(self.cursor_anim_time.sin() as f32 * 0.05)
+                * mat3::rotate(Angle::from_radians(
+                    self.cursor_anim_time.sin() as f32 * 0.05,
+                ))
                 * mat3::translate(-vec2(self.text.len() as f32 / 2.0, 0.0)),
         );
     }

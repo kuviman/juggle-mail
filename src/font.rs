@@ -33,7 +33,12 @@ impl Font {
 }
 
 impl geng::asset::Load for Font {
-    fn load(manager: &geng::Manager, path: &std::path::Path) -> geng::asset::Future<Self> {
+    type Options = ();
+    fn load(
+        manager: &geng::asset::Manager,
+        path: &std::path::Path,
+        _options: &(),
+    ) -> geng::asset::Future<Self> {
         let manager = manager.clone();
         let path = path.to_owned();
         async move {

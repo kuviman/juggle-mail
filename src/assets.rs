@@ -24,7 +24,12 @@ impl std::borrow::Borrow<ugli::Texture> for &Texture {
 }
 
 impl geng::asset::Load for Texture {
-    fn load(manager: &geng::Manager, path: &std::path::Path) -> geng::asset::Future<Self> {
+    type Options = ();
+    fn load(
+        manager: &geng::asset::Manager,
+        path: &std::path::Path,
+        _options: &(),
+    ) -> geng::asset::Future<Self> {
         let texture = manager.load(path);
         async move {
             let mut texture: ugli::Texture = texture.await?;
@@ -106,7 +111,7 @@ pub struct Assets {
     pub aim: Texture,
     #[load(postprocess = "road_postprocess")]
     pub road: Texture,
-    #[load(ext = "mp3", postprocess = "make_looped")]
+    #[load(ext = "mp3", options(looped = "true"))]
     pub music: geng::Sound,
     pub particle: Texture,
     pub sun: Texture,
@@ -126,10 +131,6 @@ pub struct Assets {
     pub menu: Texture,
     pub leaderboard_button: Texture,
     pub leaderboard_background: Texture,
-}
-
-fn make_looped(sound: &mut geng::Sound) {
-    sound.set_looped(true);
 }
 
 fn road_postprocess(texture: &mut Texture) {

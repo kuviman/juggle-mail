@@ -81,7 +81,7 @@ impl Draw3d {
             camera,
             texture,
             mat4::translate(pos)
-                * mat4::rotate_x(-camera.latitude - camera.rot)
+                * mat4::rotate_x(Angle::from_radians(-camera.latitude - camera.rot))
                 * mat4::scale(size.extend(1.0))
                 * mat4::translate(vec3(-0.5, 0.0, 0.0)),
             color,
