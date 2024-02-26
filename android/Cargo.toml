@@ -1,0 +1,20 @@
+[package]
+name = "juggle-mail-android"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[package.metadata.geng]
+# TODO should be copied from main crate since it is in dependencies
+assets = ["../assets"]
+
+[package.metadata.android]
+sdk.target_sdk_version = 33
+application.activity.orientation = "landscape"
+application.activity.theme = "@android:style/Theme.NoTitleBar.Fullscreen"
+
+[dependencies]
+batbox-android = "0.16"
+juggle-mail = { path = ".." }

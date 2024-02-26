@@ -1,3 +1,6 @@
+[workspace]
+members = ["android"]
+
 [package]
 name = "juggle-mail"
 version = "0.1.0"

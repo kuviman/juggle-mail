@@ -2703,6 +2703,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "juggle-mail-android"
+version = "0.1.0"
+dependencies = [
+ "batbox-android",
+ "juggle-mail",
+]
+
+[[package]]
 name = "kernel32-sys"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
