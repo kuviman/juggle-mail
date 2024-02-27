@@ -1,0 +1,13 @@
+android:
+  gradle: true
+  assets:
+    - ../target/android-assets # TODO should be handled by cargo-geng
+  icon: "icon.png"
+  manifest:
+    package: "com.kuviman.juggle_mail"
+    version_code: 1
+    application:
+      label: "Juggle Mail"
+      activities:
+        - orientation: "landscape"
+          theme: "@android:style/Theme.NoTitleBar.Fullscreen"
