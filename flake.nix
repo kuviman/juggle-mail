@@ -6,6 +6,10 @@
   };
   outputs = { self, geng, nixpkgs, ... }: geng.makeFlakeOutputs (system:
     {
+      rust.targets = [
+        "aarch64-linux-android"
+        "armv7-linux-androideabi"
+      ];
       src = geng.lib.${system}.filter {
         root = ./.;
         include = [
@@ -22,6 +26,6 @@
             inherit system;
           };
         in
-        [ pkgs.mold pkgs.clang_14 ];
+        [ pkgs.mold pkgs.clang_14 pkgs.bundletool ];
     });
 }
